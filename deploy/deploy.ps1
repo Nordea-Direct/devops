@@ -21,7 +21,9 @@ Param (
 $global:group,$global:artifact = $app.Split(':',2)
 
 #konstanter
+#http://nexus/service/local/repositories/snapshots/content/no/gjensidige/bank/bygg-release-deploy-poc/0.1.2-SNAPSHOT/bygg-release-deploy-poc-0.1.2-20181219.102459-9.zip
 $NEXUS_BASE = "http://nexus/service/local/repositories/releases/content/"
+$NEXUS_SNAPSHOT_BASE = "http://nexus/service/local/artifact/maven/redirect?r=snapshot&"
 $TMP_DIR_BASE = "D:\devops"
 $BASE_PATH = "D:\gbapi"
 $NOTIFY_SLEEP_TIME = 3 * 60 * 1000 # 3 minutter
@@ -84,6 +86,9 @@ if ($cmd -eq "install") {
     # last ned versjon som skal deployes
     $filename = "$artifact-$version.zip"
     $url = $NEXUS_BASE + $group.replace('.', '/') + "/$artifact/$version/$filename"
+    if ($version -match 'SNAPSHOT') {
+        $url = $NEXUS_SNAPSHOT_BASE + "g=$group&a=$artifact&v=$version"
+    }
 
     skriv_steg "laster ned fila $url"
     try {
