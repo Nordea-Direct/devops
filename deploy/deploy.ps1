@@ -24,6 +24,15 @@ $BASE_PATH = "D:\gbapi"
 $NOTIFY_SLEEP_TIME = 3 * 60 * 1000 # 3 minutter
 $HEALT_WAIT_SECONDS = 60
 
+function hentFeilmelding ($exception) {
+    if ($exception.Exception.InnerException) {
+        $feilmelding = $_.Exception.InnerException.Message
+    } else {
+        $feilmelding= $_.Exception.Message
+    }
+    return $feilmelding
+}
+
 function service-exe($cmd) {
     $exefil = "$appKatalog\$artifact.exe"
     try {
@@ -33,7 +42,7 @@ function service-exe($cmd) {
             throw "$cmd gav returkode $p.ExitCode"
         }
     } catch {
-        $feilmelding = $_.Exception.Message
+        $feilmelding= hentFeilmelding($_)
         Write-Output "Feilet med å $cmd service for $artifact-$version : $feilmelding"
         exit 1
     }
@@ -67,7 +76,7 @@ if ($cmd -eq "install") {
         $wc.DownloadFile($url, "$TMP_DIR\$filename")
     }
     catch {
-        $feilmelding = $_.Exception.Message
+        $feilmelding= hentFeilmelding($_)
         Write-Output "Feilet med å laste ned fra url $url : $feilmelding"
         exit 1
     }
@@ -80,7 +89,7 @@ if ($cmd -eq "install") {
         Expand-Archive "$TMP_DIR\$filename" -DestinationPath $extractedDir
     }
     catch {
-        $feilmelding = $_.Exception.Message
+        $feilmelding= hentFeilmelding($_)
         Write-Output "Feilet med å pakke ut fila $TMP_DIR\$filename : $feilmelding"
         exit 1
     }
@@ -94,7 +103,7 @@ if ($cmd -eq "install") {
         $serviceName = [regex]::match($line, '<name>(.+)</name>').Groups[1].Value
     }
     catch {
-        $feilmelding = $_.Exception.Message
+        $feilmelding= hentFeilmelding($_)
         Write-Output "Feilet med å lette etter service navn fra xml fila $xmlFile : $feilmelding"
         exit 1
     }
@@ -132,7 +141,7 @@ if ($cmd -eq "install") {
             $wc.UploadValues($url, 'POST', $nvc)
         }
         catch {
-            $feilmelding = $_.Exception.Message
+            $feilmelding= hentFeilmelding($_)
             Write-Output "Feilet med pause notifikasjoner for $artifact : $feilmelding"
             # ikke en kritisk feil som gjør at vi stopper deployment
         }
@@ -163,7 +172,7 @@ if ($cmd -eq "install") {
         Get-ChildItem -Path "$rollbackKatalog" -Recurse -EA SilentlyContinue | Remove-Item -Force -Recurse
     }
     catch {
-        $feilmelding = $_.Exception.Message
+        $feilmelding= hentFeilmelding($_)
         Write-Output "Feilet med å tømme rollback katalogen $rollbackKatalog : $feilmelding"
         exit 1
     }
@@ -182,7 +191,7 @@ if ($cmd -eq "install") {
                 Copy-Item -Destination { Join-Path $dest $_.FullName.Substring($source.length) }
     }
     catch {
-        $feilmelding = $_.Exception.Message
+        $feilmelding= hentFeilmelding($_)
         Write-Output "Feilet med å kopiere siste versjon til rollback katalogen for  $artifact : $feilmelding"
         exit 1
     }
@@ -197,13 +206,13 @@ if ($cmd -eq "install") {
         Copy-Item -Path "$extractedDir\*" -Destination $appKatalog -Recurse -force
     }
     catch {
-        $feilmelding = $_.Exception.Message
+        $feilmelding= hentFeilmelding($_)
         Write-Output "Feilet med å kopiere inn versjon $version for  $artifact : $feilmelding"
         exit 1
     }
 
     # installer service
-    skriv_steg "installerer service fra $exefil i katalog $appKatalog"
+    skriv_steg "installerer service i katalog $appKatalog"
     service-exe "install"
 
     # start service
