@@ -56,13 +56,12 @@ $wc = New-Object System.Net.WebClient
 
 if ($cmd -eq "install") {
 
-    $TMP_DIR = "TMP_DIR_BASE\$artifact\$version"
+    $TMP_DIR = "$TMP_DIR_BASE\$artifact\$version"
 
     # oppretter tmp dir
     skriv_steg "oppretter temp katalogen $TMP_DIR hvis den ikke finnes"
     try {
-
-        New-Item -ItemType Directory -Force -Path $TMP_DIR
+        $output = New-Item -ItemType Directory -Force -Path $TMP_DIR
     } catch {
         $feilmelding = $_.Exception.Message
         Write-Output "Feilet med å opprette temp katalogen $TMP_DIR : $feilmelding"
@@ -257,7 +256,7 @@ if ($cmd -eq "install") {
     # Tøm tmp dir
     skriv_steg "sletter temp katalogen $TMP_DIR"
     try {
-        Remove-Item -Recurse -Force $TMP_DIR
+        $output = Remove-Item -Recurse -Force $TMP_DIR
     } catch {
         $feilmelding = $_.Exception.Message
         Write-Output "Feilet med å slette temp katalogen $TMP_DIR : $feilmelding"
