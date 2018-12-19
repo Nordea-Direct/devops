@@ -12,7 +12,10 @@ Param (
 
     [Parameter(Mandatory=$true)]
     [ValidateSet("install","rollback")]
-    [string]$cmd
+    [string]$cmd,
+
+    [Parameter(Mandatory=$true)]
+    [string]$healthUrl
 )
 
 $global:group,$global:artifact = $app.Split(':',2)
@@ -226,21 +229,19 @@ if ($cmd -eq "install") {
     # verifiser at health endepunkt svarer ok.
     $loops = ($HEALT_WAIT_SECONDS / 5) + 1
     $wc.Headers.Add("Content-Type", "application/json");
-    # todo: hvordan skal denne finnes ?
-    $url = "http://localhost:4199/actuator/health"
 
     skriv_steg "venter $HEALT_WAIT_SECONDS ($loops steg a 5 sekunder) på at appen starter"
     $OK = $false
     Do {
         sleep 5
-        Write-Output "tester om applikasjonen kjører ved å kalle health endepunktet $url"
+        Write-Output "tester om applikasjonen kjører ved å kalle health endepunktet $healthUrl"
         try {
-            $response = $wc.DownloadString($url)
+            $response = $wc.DownloadString($healthUrl)
         } catch {
         }
         if ($response -match '"UP"') {
             $OK = $true
-            Write-Output "Mottok UP fra health url $url for $artifact-$version"
+            Write-Output "Mottok UP fra health url $healthUrl for $artifact-$version"
             break;
         }
         $loops = $loops - 1
@@ -260,7 +261,7 @@ if ($cmd -eq "install") {
     } catch {
         $feilmelding = $_.Exception.Message
         Write-Output "Feilet med å slette temp katalogen $TMP_DIR : $feilmelding"
-        // ikke en kritisk feil her
+        # ikke en kritisk feil her
     }
 } else {
     # rollback
