@@ -7,7 +7,7 @@ Param (
     [string]$app,
 
     [Parameter(Mandatory=$true)]
-    [ValidatePattern('^\d+\.\d+(\.\d+)?$')]
+    [ValidatePattern('^\d+\.\d+(\.\d+)?(-SNAPSHOT)?$')]
     [string]$version,
 
     [Parameter(Mandatory=$true)]
