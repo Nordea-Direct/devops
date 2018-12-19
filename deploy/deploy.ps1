@@ -1,6 +1,6 @@
 # powershell .\deploy.ps1 -app no.gjensidige.bank:kreditt-backend -version 2.1.14 -cmd install
 # powershell .\deploy.ps1 -app no.gjensidige.bank:spring-boot-admin -version 0.1.0 -cmd install
-    [CmdletBinding()]
+[CmdletBinding()]
 Param (
     [Parameter(Mandatory=$true)]
     [ValidatePattern('.+:.+')]
@@ -19,7 +19,7 @@ $global:group,$global:artifact = $app.Split(':',2)
 
 #konstanter
 $NEXUS_BASE = "http://nexus/service/local/repositories/releases/content/"
-$TMP_DIR = "C:\work\temp"
+$TMP_DIR_BASE = "D:\devops"
 $BASE_PATH = "D:\gbapi"
 $NOTIFY_SLEEP_TIME = 3 * 60 * 1000 # 3 minutter
 $HEALT_WAIT_SECONDS = 60
@@ -56,12 +56,24 @@ $wc = New-Object System.Net.WebClient
 
 if ($cmd -eq "install") {
 
+    $TMP_DIR = "TMP_DIR_BASE\$artifact\$version"
+
+    # oppretter tmp dir
+    skriv_steg "oppretter temp katalogen $TMP_DIR hvis den ikke finnes"
+    try {
+
+        New-Item -ItemType Directory -Force -Path $TMP_DIR
+    } catch {
+        $feilmelding = $_.Exception.Message
+        Write-Output "Feilet med å opprette temp katalogen $TMP_DIR : $feilmelding"
+        exit 1
+    }
+
     # Tøm tmp dir
     skriv_steg "tømmer temp katalogen $TMP_DIR"
     try {
         Get-ChildItem -Path "$TMP_DIR" -Recurse | Remove-Item -Force -Recurse
-    }
-    catch {
+    } catch {
         $feilmelding = $_.Exception.Message
         Write-Output "Feilet med å tømme temp katalogen $TMP_DIR : $feilmelding"
         exit 1
@@ -74,8 +86,7 @@ if ($cmd -eq "install") {
     skriv_steg "laster ned fila $url"
     try {
         $wc.DownloadFile($url, "$TMP_DIR\$filename")
-    }
-    catch {
+    } catch {
         $feilmelding= hentFeilmelding($_)
         Write-Output "Feilet med å laste ned fra url $url : $feilmelding"
         exit 1
@@ -87,8 +98,7 @@ if ($cmd -eq "install") {
     try {
         $result = New-Item -ItemType directory -Path $extractedDir
         Expand-Archive "$TMP_DIR\$filename" -DestinationPath $extractedDir
-    }
-    catch {
+    } catch {
         $feilmelding= hentFeilmelding($_)
         Write-Output "Feilet med å pakke ut fila $TMP_DIR\$filename : $feilmelding"
         exit 1
@@ -101,8 +111,7 @@ if ($cmd -eq "install") {
     try {
         $line = (Select-String -path $xmlFile -Pattern '<name>.+</name>').line
         $serviceName = [regex]::match($line, '<name>(.+)</name>').Groups[1].Value
-    }
-    catch {
+    } catch {
         $feilmelding= hentFeilmelding($_)
         Write-Output "Feilet med å lette etter service navn fra xml fila $xmlFile : $feilmelding"
         exit 1
@@ -126,8 +135,7 @@ if ($cmd -eq "install") {
                 $kjorer = $true
             }
         }
-    }
-    catch {
+    } catch {
         ## ok med tomt her
     }
     Write-Output "service $serviceName fikk statuser: kjorer $kjorer og serviceFinnes $serviceFinnes"
@@ -139,8 +147,7 @@ if ($cmd -eq "install") {
             $nvc = New-Object System.Collections.Specialized.NameValueCollection
             $url = "http://localhost:4199/notifications/filters?applicationName=$artifact&ttl=$NOTIFY_SLEEP_TIME"
             $wc.UploadValues($url, 'POST', $nvc)
-        }
-        catch {
+        } catch {
             $feilmelding= hentFeilmelding($_)
             Write-Output "Feilet med pause notifikasjoner for $artifact : $feilmelding"
             # ikke en kritisk feil som gjør at vi stopper deployment
@@ -170,8 +177,7 @@ if ($cmd -eq "install") {
     try {
         skriv_steg "sletter rollback katalog $rollbackKatalog (hvis den finnes)"
         Get-ChildItem -Path "$rollbackKatalog" -Recurse -EA SilentlyContinue | Remove-Item -Force -Recurse
-    }
-    catch {
+    } catch {
         $feilmelding= hentFeilmelding($_)
         Write-Output "Feilet med å tømme rollback katalogen $rollbackKatalog : $feilmelding"
         exit 1
@@ -189,8 +195,7 @@ if ($cmd -eq "install") {
         $exclude = 'logs'
         Get-ChildItem $source -Recurse  | where { $_.FullName.Substring($exclude.length) -notmatch $exclude } |
                 Copy-Item -Destination { Join-Path $dest $_.FullName.Substring($source.length) }
-    }
-    catch {
+    } catch {
         $feilmelding= hentFeilmelding($_)
         Write-Output "Feilet med å kopiere siste versjon til rollback katalogen for  $artifact : $feilmelding"
         exit 1
@@ -204,8 +209,7 @@ if ($cmd -eq "install") {
     try {
         skriv_steg "kopierer inn filene fra $extractedDir til $appKatalog"
         Copy-Item -Path "$extractedDir\*" -Destination $appKatalog -Recurse -force
-    }
-    catch {
+    } catch {
         $feilmelding= hentFeilmelding($_)
         Write-Output "Feilet med å kopiere inn versjon $version for  $artifact : $feilmelding"
         exit 1
@@ -233,8 +237,7 @@ if ($cmd -eq "install") {
         Write-Output "tester om applikasjonen kjører ved å kalle health endepunktet $url"
         try {
             $response = $wc.DownloadString($url)
-        }
-        catch {
+        } catch {
         }
         if ($response -match '"UP"') {
             $OK = $true
@@ -247,9 +250,18 @@ if ($cmd -eq "install") {
     # rapporter suksess til kaller (dvs Jenkins) og til spring boot admin, slik at den kan verifisere at løsningen er oppe
     if ($OK) {
         skriv_steg "SUKSESS: $artifact-$version ferdig deployet"
-    }
-    else {
+    } else {
         Write-Output "Ukjent status: $artifact-$version kom ikke opp i løpet av $HEALT_WAIT_SECONDS sekunder"
+    }
+
+    # Tøm tmp dir
+    skriv_steg "sletter temp katalogen $TMP_DIR"
+    try {
+        Remove-Item -Recurse -Force $TMP_DIR
+    } catch {
+        $feilmelding = $_.Exception.Message
+        Write-Output "Feilet med å slette temp katalogen $TMP_DIR : $feilmelding"
+        // ikke en kritisk feil her
     }
 } else {
     # rollback
