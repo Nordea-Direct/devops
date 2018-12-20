@@ -182,7 +182,9 @@ if ($cmd -eq "install") {
     $rollbackKatalog = "$appKatalog-rollback"
     try {
         skriv_steg "sletter rollback katalog $rollbackKatalog (hvis den finnes)"
-        Get-ChildItem -Path "$rollbackKatalog" -Recurse -EA SilentlyContinue | Remove-Item -Force -Recurse
+        if (Test-Path $rollbackKatalog) { # Get-ChildItem kan henge på kataloger som ikke finnes :-(
+            Get-ChildItem -Path "$rollbackKatalog" -Recurse -EA SilentlyContinue | Remove-Item -Force -Recurse
+        }
     } catch {
         $feilmelding= hentFeilmelding($_)
         Write-Output "Feilet med å tømme rollback katalogen $rollbackKatalog : $feilmelding"
