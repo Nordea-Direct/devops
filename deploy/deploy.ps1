@@ -37,19 +37,17 @@ function hentFeilmelding ($exception) {
 
 function service-exe($cmd) {
     $exefil = "$appKatalog\$artifact.exe"
-    $fullfoert = $false
 
     try {
         $p = Start-Process $exefil -ArgumentList $cmd -WorkingDirectory $appKatalog -wait -NoNewWindow -PassThru
-        $fullfoert = $true
         $result = $p.HasExited
         if ($p.ExitCode) {
-            throw "$cmd ga returkode $p.ExitCode"
+            throw "$cmd ga returkode $($p.ExitCode)"
         }
     } catch {
         $feilmelding= hentFeilmelding($_)
         Write-Output "Feilet med å $cmd service for $artifact-$version : $feilmelding"
-        Write-Output "$fullfoert - prøvde: Start-Process $exefil -ArgumentList $cmd -WorkingDirectory $appKatalog -wait -NoNewWindow -PassThru"
+        Write-Output "prøvde: Start-Process $exefil -ArgumentList $cmd -WorkingDirectory $appKatalog -wait -NoNewWindow -PassThru"
         exit 1
     }
 }
