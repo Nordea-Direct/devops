@@ -1,5 +1,3 @@
-# powershell .\deploy.ps1 -app no.gjensidige.bank:kreditt-backend -version 2.1.14 -cmd install
-# powershell .\deploy.ps1 -app no.gjensidige.bank:spring-boot-admin -version 0.1.0 -cmd install
 [CmdletBinding()]
 Param (
     [Parameter(Mandatory=$true)]
@@ -39,8 +37,11 @@ function hentFeilmelding ($exception) {
 
 function service-exe($cmd) {
     $exefil = "$appKatalog\$artifact.exe"
+    $fullfoert = $false
+
     try {
         $p = Start-Process $exefil -ArgumentList $cmd -WorkingDirectory $appKatalog -wait -NoNewWindow -PassThru
+        $fullfoert = $true
         $result = $p.HasExited
         if ($p.ExitCode) {
             throw "$cmd ga returkode $p.ExitCode"
@@ -48,6 +49,7 @@ function service-exe($cmd) {
     } catch {
         $feilmelding= hentFeilmelding($_)
         Write-Output "Feilet med å $cmd service for $artifact-$version : $feilmelding"
+        Write-Output "$fullfoert - prøvde: Start-Process $exefil -ArgumentList $cmd -WorkingDirectory $appKatalog -wait -NoNewWindow -PassThru"
         exit 1
     }
 }
@@ -155,7 +157,7 @@ if ($cmd -eq "install") {
             $wc.UploadValues($url, 'POST', $nvc)
         } catch {
             $feilmelding= hentFeilmelding($_)
-            Write-Output "Feilet med pause notifikasjoner for $artifact : $feilmelding"
+            Write-Output "Feilet med pause notifikasjoner for $artifact : $feilmelding til url $url"
             # ikke en kritisk feil som gjør at vi stopper deployment
         }
     }
