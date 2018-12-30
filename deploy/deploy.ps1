@@ -1,3 +1,4 @@
+# æøåÆØÅ
 [CmdletBinding()]
 Param (
     [Parameter(Mandatory=$true)]
