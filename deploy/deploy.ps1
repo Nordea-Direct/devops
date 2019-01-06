@@ -1,4 +1,3 @@
-#æøåÆØÅ#
 [CmdletBinding()]
 Param (
     [Parameter(Mandatory=$true)]
@@ -47,8 +46,8 @@ function service-exe($cmd) {
         }
     } catch {
         $feilmelding= hentFeilmelding($_)
-        Write-Output "Feilet med å $cmd service for $artifact-$version : $feilmelding"
-        Write-Output "prøvde: Start-Process $exefil -ArgumentList $cmd -WorkingDirectory $appKatalog -wait -NoNewWindow -PassThru"
+        Write-Output "Feilet med aa $cmd service for $artifact-$version : $feilmelding"
+        Write-Output "proevde: Start-Process $exefil -ArgumentList $cmd -WorkingDirectory $appKatalog -wait -NoNewWindow -PassThru"
         exit 1
     }
 }
@@ -69,17 +68,17 @@ if ($cmd -eq "install") {
         $output = New-Item -ItemType Directory -Force -Path $TMP_DIR
     } catch {
         $feilmelding = $_.Exception.Message
-        Write-Output "Feilet med å opprette temp katalogen $TMP_DIR : $feilmelding"
+        Write-Output "Feilet med aa opprette temp katalogen $TMP_DIR : $feilmelding"
         exit 1
     }
 
     # Tøm tmp dir
-    skriv_steg "tømmer temp katalogen $TMP_DIR"
+    skriv_steg "toemmer temp katalogen $TMP_DIR"
     try {
         Get-ChildItem -Path "$TMP_DIR" -Recurse | Remove-Item -Force -Recurse
     } catch {
         $feilmelding = $_.Exception.Message
-        Write-Output "Feilet med å tømme temp katalogen $TMP_DIR : $feilmelding"
+        Write-Output "Feilet med aa toemme temp katalogen $TMP_DIR : $feilmelding"
         exit 1
     }
 
@@ -95,7 +94,7 @@ if ($cmd -eq "install") {
         $wc.DownloadFile($url, "$TMP_DIR\$filename")
     } catch {
         $feilmelding= hentFeilmelding($_)
-        Write-Output "Feilet med å laste ned fra url $url : $feilmelding"
+        Write-Output "Feilet med aa laste ned fra url $url : $feilmelding"
         exit 1
     }
 
@@ -107,20 +106,20 @@ if ($cmd -eq "install") {
         Expand-Archive "$TMP_DIR\$filename" -DestinationPath $extractedDir
     } catch {
         $feilmelding= hentFeilmelding($_)
-        Write-Output "Feilet med å pakke ut fila $TMP_DIR\$filename : $feilmelding"
+        Write-Output "Feilet med aa pakke ut fila $TMP_DIR\$filename : $feilmelding"
         exit 1
     }
 
     # Finner service navn
     $serviceName = $null
     $xmlFile = "$extractedDir\$artifact.xml"
-    skriv_steg "Prøver å finne servicenavnet fra fila $xmlFile"
+    skriv_steg "Proever aa finne servicenavnet fra fila $xmlFile"
     try {
         $line = (Select-String -path $xmlFile -Pattern '<name>.+</name>').line
         $serviceName = [regex]::match($line, '<name>(.+)</name>').Groups[1].Value
     } catch {
         $feilmelding= hentFeilmelding($_)
-        Write-Output "Feilet med å lette etter service navn fra xml fila $xmlFile : $feilmelding"
+        Write-Output "Feilet med aa lette etter service navn fra xml fila $xmlFile : $feilmelding"
         exit 1
     }
     if (!$serviceName) {
@@ -133,7 +132,7 @@ if ($cmd -eq "install") {
     $serviceFinnes = $false
 
     #kjører appen ?
-    skriv_steg "sjekker om $serviceName kjører og er installert"
+    skriv_steg "sjekker om $serviceName kjoerer og er installert"
     try {
         $service = Get-Service -Name $serviceName -EA SilentlyContinue
         if ($service) {
@@ -147,8 +146,8 @@ if ($cmd -eq "install") {
     }
     Write-Output "service $serviceName fikk statuser: kjorer $kjorer og serviceFinnes $serviceFinnes"
 
-    # hvis app kjører - varsel overvåkning om at vi går ned (spring boot admin)
-    skriv_steg "varsler spring boot admin om at vi går ned for $NOTIFY_SLEEP_TIME ms"
+    # hvis app kjører - varsel overvaakning om at vi gaar ned (spring boot admin)
+    skriv_steg "varsler spring boot admin om at vi gaar ned for $NOTIFY_SLEEP_TIME ms"
     if ($kjorer) {
         try {
             $nvc = New-Object System.Collections.Specialized.NameValueCollection
@@ -165,7 +164,7 @@ if ($cmd -eq "install") {
 
     # hvis app kjører - stopp app
     if ($kjorer) {
-        skriv_steg "applikasjon kjører, stopper"
+        skriv_steg "applikasjon kjoerer, stopper"
         service-exe "stop"
     }
 
@@ -183,12 +182,12 @@ if ($cmd -eq "install") {
     $rollbackKatalog = "$appKatalog-rollback"
     try {
         skriv_steg "sletter rollback katalog $rollbackKatalog (hvis den finnes)"
-        if (Test-Path $rollbackKatalog) { # Get-ChildItem kan henge på kataloger som ikke finnes :-(
+        if (Test-Path $rollbackKatalog) { # Get-ChildItem kan henge paa kataloger som ikke finnes :-(
             Get-ChildItem -Path "$rollbackKatalog" -Recurse -EA SilentlyContinue | Remove-Item -Force -Recurse
         }
     } catch {
         $feilmelding= hentFeilmelding($_)
-        Write-Output "Feilet med å tømme rollback katalogen $rollbackKatalog : $feilmelding"
+        Write-Output "Feilet med aa toemme rollback katalogen $rollbackKatalog : $feilmelding"
         exit 1
     }
 
@@ -206,7 +205,7 @@ if ($cmd -eq "install") {
                 Copy-Item -Destination { Join-Path $dest $_.FullName.Substring($source.length) }
     } catch {
         $feilmelding= hentFeilmelding($_)
-        Write-Output "Feilet med å kopiere siste versjon til rollback katalogen for  $artifact : $feilmelding"
+        Write-Output "Feilet med aa kopiere siste versjon til rollback katalogen for  $artifact : $feilmelding"
         exit 1
     }
 
@@ -220,7 +219,7 @@ if ($cmd -eq "install") {
         Copy-Item -Path "$extractedDir\*" -Destination $appKatalog -Recurse -force
     } catch {
         $feilmelding= hentFeilmelding($_)
-        Write-Output "Feilet med å kopiere inn versjon $version for  $artifact : $feilmelding"
+        Write-Output "Feilet med aa kopiere inn versjon $version for  $artifact : $feilmelding"
         exit 1
     }
 
@@ -237,11 +236,11 @@ if ($cmd -eq "install") {
     $loops = ($HEALT_WAIT_SECONDS / 5) + 1
     $wc.Headers.Add("Content-Type", "application/json");
 
-    skriv_steg "venter $HEALT_WAIT_SECONDS ($loops steg a 5 sekunder) på at appen starter"
+    skriv_steg "venter $HEALT_WAIT_SECONDS ($loops steg a 5 sekunder) paa at appen starter"
     $OK = $false
     Do {
         sleep 5
-        Write-Output "tester om applikasjonen kjører ved å kalle health endepunktet $healthUrl"
+        Write-Output "tester om applikasjonen kjoerer ved aa kalle health endepunktet $healthUrl"
         try {
             $response = $wc.DownloadString($healthUrl)
         } catch {
@@ -258,7 +257,7 @@ if ($cmd -eq "install") {
     if ($OK) {
         skriv_steg "SUKSESS: $artifact-$version ferdig deployet"
     } else {
-        Write-Output "Ukjent status: $artifact-$version kom ikke opp i løpet av $HEALT_WAIT_SECONDS sekunder"
+        Write-Output "Ukjent status: $artifact-$version kom ikke opp i loepet av $HEALT_WAIT_SECONDS sekunder"
     }
 
     # Tøm tmp dir
@@ -267,7 +266,7 @@ if ($cmd -eq "install") {
         $output = Remove-Item -Recurse -Force $TMP_DIR
     } catch {
         $feilmelding = $_.Exception.Message
-        Write-Output "Feilet med å slette temp katalogen $TMP_DIR : $feilmelding"
+        Write-Output "Feilet med aa slette temp katalogen $TMP_DIR : $feilmelding"
         # ikke en kritisk feil her
     }
 } else {
