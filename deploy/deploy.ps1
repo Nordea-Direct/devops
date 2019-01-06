@@ -23,6 +23,8 @@ $NEXUS_BASE = "http://nexus/service/local/repositories/releases/content/"
 $NEXUS_SNAPSHOT_BASE = "http://nexus/service/local/artifact/maven/redirect?r=snapshots&e=zip&"
 $TMP_DIR_BASE = "D:\devops"
 $BASE_PATH = "D:\gbapi"
+$ROLLBACK_BASE_PATH = "D:\gbapi_rollback"
+
 $NOTIFY_SLEEP_TIME = 3 * 60 * 1000 # 3 minutter
 $HEALT_WAIT_SECONDS = 60
 
@@ -179,7 +181,7 @@ if ($cmd -eq "install") {
     $result = New-Item -ItemType Directory -Force -Path $appKatalog
 
     # slett rollback katalog
-    $rollbackKatalog = "$appKatalog-rollback"
+    $rollbackKatalog = "$ROLLBACK_BASE_PATH/$appKatalog"
     try {
         skriv_steg "sletter rollback katalog $rollbackKatalog (hvis den finnes)"
         if (Test-Path $rollbackKatalog) { # Get-ChildItem kan henge paa kataloger som ikke finnes :-(
