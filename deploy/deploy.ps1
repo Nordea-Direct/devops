@@ -181,7 +181,7 @@ if ($cmd -eq "install") {
     $result = New-Item -ItemType Directory -Force -Path $appKatalog
 
     # slett rollback katalog
-    $rollbackKatalog = "$ROLLBACK_BASE_PATH/$appKatalog"
+    $rollbackKatalog = "$ROLLBACK_BASE_PATH/$artifact"
     try {
         skriv_steg "sletter rollback katalog $rollbackKatalog (hvis den finnes)"
         if (Test-Path $rollbackKatalog) { # Get-ChildItem kan henge paa kataloger som ikke finnes :-(
