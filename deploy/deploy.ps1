@@ -38,7 +38,7 @@ function hentFeilmelding ($exception) {
 }
 
 function sjekkOmKjoerer($serviceName) {
-    $kjorer = $true
+    $kjorer = $false
     try {
         $service = Get-Service -Name $serviceName -EA SilentlyContinue
         if ($service) {
@@ -183,6 +183,7 @@ if ($cmd -eq "install") {
     if ($kjorer) {
         skriv_steg "applikasjon kjoerer, stopper"
         service-exe "stop"
+        sleep 1
         if (sjekkOmKjoerer($serviceName)) {
             Write-Output "Feilet med stoppe applikasjonen $serviceName, gir opp"
             exit 1
