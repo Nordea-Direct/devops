@@ -37,6 +37,21 @@ function hentFeilmelding ($exception) {
     return $feilmelding
 }
 
+function sjekkOmKjoerer($serviceName) {
+    $kjorer = $true
+    try {
+        $service = Get-Service -Name $serviceName -EA SilentlyContinue
+        if ($service) {
+            if ($service.Status -eq "Running") {
+                $kjorer = $true
+            }
+        }
+    } catch {
+        ## ok med tomt her
+    }
+    return $kjorer
+}
+
 function service-exe($cmd) {
     $exefil = "$appKatalog\$artifact.exe"
 
@@ -168,6 +183,10 @@ if ($cmd -eq "install") {
     if ($kjorer) {
         skriv_steg "applikasjon kjoerer, stopper"
         service-exe "stop"
+        if (sjekkOmKjoerer($serviceName)) {
+            Write-Output "Feilet med stoppe applikasjonen $serviceName, gir opp"
+            exit 1
+        }
     }
 
     # hvis service er installert - slett
