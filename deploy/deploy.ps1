@@ -197,7 +197,7 @@ if ($cmd -eq "install") {
     # hvis service er installert - slett
     if ($serviceFinnes) {
         skriv_steg "service $serviceName er installert. Sletter"
-        $xmlFile = "$extractedDir\$artifact.exe"
+        $exefil = "$extractedDir\$artifact.exe"
         service-exe-sub "uninstall" $exefil
     }
 
