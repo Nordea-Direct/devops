@@ -54,11 +54,19 @@ function sjekkOmKjoerer($serviceName) {
 
 function service-exe($cmd) {
     $exefil = "$appKatalog\$artifact.exe"
-    service-exe-sub($cmd, $exefil)
+    service-exe-sub -cmd $cmd, -exe $exefil
 }
 
 
-function service-exe-sub($cmd, $exefil) {
+function service-exe-sub {
+    Param (
+        [Parameter(Mandatory=$true, ParameterSetName='cmd')]
+        [string]$cmd,
+
+        [Parameter(Mandatory=$true, ParameterSetName='exe')]
+        [string]$exefil
+    )
+
     Write-Output "cmd = $cmd, exefil = $exefil"
     try {
         $p = Start-Process $exefil -ArgumentList $cmd -WorkingDirectory $appKatalog -wait -NoNewWindow -PassThru
