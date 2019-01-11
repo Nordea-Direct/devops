@@ -54,20 +54,7 @@ function sjekkOmKjoerer($serviceName) {
 
 function service-exe($cmd) {
     $exefil = "$appKatalog\$artifact.exe"
-    service-exe-sub -cmd $cmd, -exe $exefil
-}
 
-
-function service-exe-sub {
-    Param (
-        [Parameter(Mandatory=$true, ParameterSetName='cmd')]
-        [string]$cmd,
-
-        [Parameter(Mandatory=$true, ParameterSetName='exe')]
-        [string]$exefil
-    )
-
-    Write-Output "cmd = $cmd, exefil = $exefil"
     try {
         $p = Start-Process $exefil -ArgumentList $cmd -WorkingDirectory $appKatalog -wait -NoNewWindow -PassThru
         $result = $p.HasExited
@@ -130,7 +117,7 @@ if ($cmd -eq "install") {
 
     # pakk ut filer i tmp dir
     $extractedDir = "$TMP_DIR\extracted"
-    skriv_steg "pakker ut fila tll $extractedDir"
+    skriv_steg "paker ut fila tll $extractedDir"
     try {
         $result = New-Item -ItemType directory -Path $extractedDir
         Expand-Archive "$TMP_DIR\$filename" -DestinationPath $extractedDir
@@ -206,8 +193,8 @@ if ($cmd -eq "install") {
     # hvis service er installert - slett
     if ($serviceFinnes) {
         skriv_steg "service $serviceName er installert. Sletter"
-        $xmlFile = "$extractedDir\$artifact.exe"
-        service-exe-sub("uninstall",$exefil)
+# todo: her henter vi exe fila fra dest katalog, og ikke fra extracted. dette feiler når servicen finnes fra før, men ikke filene
+        service-exe "uninstall"
     }
 
     # sørg for at app katalog finnes
