@@ -54,7 +54,11 @@ function sjekkOmKjoerer($serviceName) {
 
 function service-exe($cmd) {
     $exefil = "$appKatalog\$artifact.exe"
+    service-exe-sub($cmd,$exefil)
+}
 
+
+function service-exe-sub($cmd, $exefil) {
     try {
         $p = Start-Process $exefil -ArgumentList $cmd -WorkingDirectory $appKatalog -wait -NoNewWindow -PassThru
         $result = $p.HasExited
@@ -117,7 +121,7 @@ if ($cmd -eq "install") {
 
     # pakk ut filer i tmp dir
     $extractedDir = "$TMP_DIR\extracted"
-    skriv_steg "paker ut fila tll $extractedDir"
+    skriv_steg "pakker ut fila tll $extractedDir"
     try {
         $result = New-Item -ItemType directory -Path $extractedDir
         Expand-Archive "$TMP_DIR\$filename" -DestinationPath $extractedDir
@@ -193,7 +197,8 @@ if ($cmd -eq "install") {
     # hvis service er installert - slett
     if ($serviceFinnes) {
         skriv_steg "service $serviceName er installert. Sletter"
-        service-exe "uninstall"
+        $xmlFile = "$extractedDir\$artifact.exe"
+        service-exe-sub("uninstall",$exefil)
     }
 
     # sørg for at app katalog finnes
