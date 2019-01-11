@@ -54,7 +54,7 @@ function sjekkOmKjoerer($serviceName) {
 
 function service-exe($cmd) {
     $exefil = "$appKatalog\$artifact.exe"
-    service-exe-sub($cmd $exefil)
+    service-exe-sub($cmd, $exefil)
 }
 
 
