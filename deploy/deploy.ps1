@@ -288,6 +288,8 @@ if ($cmd -eq "install") {
     }
 
     # Tøm tmp dir
+    $TMP_DIR = "$TMP_DIR_BASE\$artifact"
+
     skriv_steg "sletter temp katalogen $TMP_DIR"
     try {
         $output = Remove-Item -Recurse -Force $TMP_DIR
