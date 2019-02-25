@@ -271,6 +271,7 @@ if ($cmd -eq "install") {
         try {
             $response = $wc.DownloadString($healthUrl)
         } catch {
+            Write-Output "Fikk feil: $($error[0])"
         }
         if ($response -match '"UP"') {
             $OK = $true
@@ -284,7 +285,7 @@ if ($cmd -eq "install") {
     if ($OK) {
         skriv_steg "SUKSESS: $artifact-$version ferdig deployet"
     } else {
-        Write-Output "Ukjent status: $artifact-$version kom ikke opp i loepet av $HEALT_WAIT_SECONDS sekunder"
+        Write-Output "Ukjent status: $artifact-$version kom ikke opp i loepet av $HEALT_WAIT_SECONDS sekunder. Siste respons: $response"
     }
 
     # Tøm tmp dir
