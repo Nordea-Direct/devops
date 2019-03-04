@@ -201,6 +201,19 @@ if ($cmd -eq "install") {
         service-exe-sub "uninstall" $exefil
     }
 
+    # sjekk at service nå er borte, hvis den fantes
+    if ($serviceFinnes) {
+        try {
+            $service = Get-Service -Name $serviceName -EA SilentlyContinue
+            if ($service) {
+                Write-Output "Klarte ikke å slette service $serviceName. Gir opp"
+                exit 1
+            }
+        } catch {
+            ## ok med tomt her
+        }
+   }
+
     # sørg for at app katalog finnes
     skriv_steg "oppretter $appKatalog (hvis den ikke finnes)"
     $result = New-Item -ItemType Directory -Force -Path $appKatalog
