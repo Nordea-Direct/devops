@@ -121,7 +121,7 @@ if ($cmd -eq "install") {
 
     # pakk ut filer i tmp dir
     $extractedDir = "$TMP_DIR\extracted"
-    skriv_steg "pakker ut fila tll $extractedDir"
+    skriv_steg "pakker ut fila til $extractedDir"
     try {
         $result = New-Item -ItemType directory -Path $extractedDir
         Expand-Archive "$TMP_DIR\$filename" -DestinationPath $extractedDir
