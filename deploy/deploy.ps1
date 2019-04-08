@@ -173,7 +173,7 @@ if ($cmd -eq "install") {
         try {
             $nvc = New-Object System.Collections.Specialized.NameValueCollection
             $url = "http://localhost:4199/notifications/filters?applicationName=$artifact&ttl=$NOTIFY_SLEEP_TIME"
-            $wc.UploadValues($url, 'POST', $nvc)
+            $out = $wc.UploadValues($url, 'POST', $nvc)
         } catch {
             $feilmelding= hentFeilmelding($_)
             Write-Output "Feilet med pause notifikasjoner for $artifact : $feilmelding til url $url"
