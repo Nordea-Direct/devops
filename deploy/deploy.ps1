@@ -297,7 +297,7 @@ if ($cmd -eq "install") {
     # rapporter suksess til kaller (dvs Jenkins) og til spring boot admin, slik at den kan verifisere at løsningen er oppe
     if ($OK) {
         skriv_steg "SUKSESS: $artifact-$version ferdig deployet"
-        send-mailmessage -to Error-GB@gjensidigebank.no -subject "SUKSESS: $artifact-$version ferdig deployet" -from "$env:computername" -SmtpServer 139.117.104.4
+        send-mailmessage -to Error-GB@gjensidigebank.no -subject "SUKSESS: $artifact-$version ferdig deployet" -from "$env:computername@prod.gjensidigebank.no" -SmtpServer 139.117.104.4
     } else {
         Write-Output "Ukjent status: $artifact-$version kom ikke opp i loepet av $HEALT_WAIT_SECONDS sekunder. Siste respons: $response"
     }
