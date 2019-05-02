@@ -144,8 +144,6 @@ function stopp_app($serviceName) {
 }
 
 function test_app_url($url) {
-    skriv_steg "i sjekk_app"
-
     Write-Output "i sjekk_app"
     Write-Output "i sjekk_app skal sjekke url $url"
 
@@ -172,7 +170,7 @@ function test_app_url($url) {
         $loops = $loops - 1
     } until ($loops -le 0)
 
-    return $OK
+    $global:app_url_status = $OK
 }
 
 
@@ -310,7 +308,7 @@ try {
     service-exe "start"
 
     Write-Output "skal sjekke om app starter"
-    $app_url_status = test_app_url $healthUrl
+    test_app_url $healthUrl
 
     # rapporter suksess til kaller (dvs Jenkins) og til spring boot admin, slik at den kan verifisere at løsningen er oppe
     if ($app_url_status) {
@@ -366,7 +364,7 @@ try {
         skriv_steg "starter service $artifact"
         service-exe "start"
 
-        $app_url_status = test_app_url $healthUrl
+        test_app_url $healthUrl
 
         if ($app_url_status) {
             skriv_steg "SEMI-SUKSESS: $artifact rullet tilbake til forrige versjon"
