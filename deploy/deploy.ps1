@@ -368,7 +368,7 @@ try {
         test_app_url $healthUrl
 
         if ($app_url_status) {
-            skriv_steg "SEMI-SUKSESS: $artifact rullet tilbake til forrige versjon"
+            skriv_steg "SEMI-FEIL: $artifact rullet tilbake til forrige versjon"
         } else {
             Write-Output "rollback feilet med Ukjent status:  $artifact kom ikke opp i loepet av $HEALT_WAIT_SECONDS sekunder"
         }
