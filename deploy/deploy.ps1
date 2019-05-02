@@ -9,10 +9,6 @@ Param (
     [string]$version,
 
     [Parameter(Mandatory=$true)]
-    [ValidateSet("install","rollback")]
-    [string]$cmd,
-
-    [Parameter(Mandatory=$true)]
     [string]$healthUrl
 )
 
