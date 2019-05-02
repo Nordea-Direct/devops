@@ -142,8 +142,14 @@ function stopp_app($serviceName) {
         }
     }
 }
+function test_func() {
+    skriv_steg "i test_func"
+    Write-Output "i test_func"
+}
 
 function sjekk_app($url) {
+    skriv_steg "i sjekk_app"
+
     Write-Output "i sjekk_app"
     Write-Output "i sjekk_app skal sjekke url $url"
 
@@ -308,7 +314,8 @@ try {
     service-exe "start"
 
     Write-Output "skal sjekke om app starter"
-    $OK = sjekk_app($healthUrl)
+    test_func
+    $OK = sjekk_app $healthUrl
 
     # rapporter suksess til kaller (dvs Jenkins) og til spring boot admin, slik at den kan verifisere at løsningen er oppe
     if ($OK) {
