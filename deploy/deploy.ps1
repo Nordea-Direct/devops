@@ -144,6 +144,8 @@ function stopp_app($serviceName) {
 }
 
 function sjekk_app($url) {
+    Write-Output "i sjekk_app skal sjekke url $url"
+
     # verifiser at prosess kjører etter x sekunder
     # verifiser at health endepunkt svarer ok.
     $loops = ($HEALT_WAIT_SECONDS / 5) + 1
@@ -304,6 +306,7 @@ try {
     skriv_steg "starter service $artifact"
     service-exe "start"
 
+    Write-Output "skal sjekke om app starter"
     $OK = sjekk_app($healthUrl)
 
     # rapporter suksess til kaller (dvs Jenkins) og til spring boot admin, slik at den kan verifisere at løsningen er oppe
