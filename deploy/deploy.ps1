@@ -144,9 +144,6 @@ function stopp_app($serviceName) {
 }
 
 function test_app_url($url) {
-    Write-Output "i sjekk_app"
-    Write-Output "i sjekk_app skal sjekke url $url"
-
     # verifiser at prosess kjører etter x sekunder
     # verifiser at health endepunkt svarer ok.
     $loops = ($HEALT_WAIT_SECONDS / 5) + 1
