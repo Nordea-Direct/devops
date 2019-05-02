@@ -9,6 +9,10 @@ Param (
     [string]$version,
 
     [Parameter(Mandatory=$true)]
+    [ValidateSet("install","rollback")]
+    [string]$cmd,
+
+    [Parameter(Mandatory=$true)]
     [string]$healthUrl
 )
 
@@ -139,7 +143,7 @@ function stopp_app($serviceName) {
     }
 }
 
-function sjekk_app($healthUrl) {
+function sjekk_app($url) {
     # verifiser at prosess kjører etter x sekunder
     # verifiser at health endepunkt svarer ok.
     $loops = ($HEALT_WAIT_SECONDS / 5) + 1
@@ -149,15 +153,15 @@ function sjekk_app($healthUrl) {
     $OK = $false
     Do {
         sleep 5
-        Write-Output "tester om applikasjonen kjoerer ved aa kalle health endepunktet $healthUrl"
+        Write-Output "tester om applikasjonen kjoerer ved aa kalle health endepunktet $url"
         try {
-            $response = $wc.DownloadString($healthUrl)
+            $response = $wc.DownloadString($url)
         } catch {
             Write-Output "Fikk feil: $($error[0])"
         }
         if ($response -match '"UP"') {
             $OK = $true
-            Write-Output "Mottok UP fra health url $healthUrl for $artifact-$version"
+            Write-Output "Mottok UP fra health url $url for $artifact-$version"
             break;
         }
         $loops = $loops - 1
