@@ -315,6 +315,7 @@ try {
 
     Write-Output "skal sjekke om app starter"
     test_func
+    test_app_url $healthUrl
     $OK = test_app_url $healthUrl
 
     # rapporter suksess til kaller (dvs Jenkins) og til spring boot admin, slik at den kan verifisere at løsningen er oppe
