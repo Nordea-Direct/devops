@@ -144,6 +144,7 @@ function stopp_app($serviceName) {
 }
 
 function sjekk_app($url) {
+    Write-Output "i sjekk_app"
     Write-Output "i sjekk_app skal sjekke url $url"
 
     # verifiser at prosess kjører etter x sekunder
