@@ -147,7 +147,7 @@ function test_func() {
     Write-Output "i test_func"
 }
 
-function sjekk_app($url) {
+function test_app_url($url) {
     skriv_steg "i sjekk_app"
 
     Write-Output "i sjekk_app"
@@ -315,7 +315,7 @@ try {
 
     Write-Output "skal sjekke om app starter"
     test_func
-    $OK = sjekk_app $healthUrl
+    $OK = test_app_url $healthUrl
 
     # rapporter suksess til kaller (dvs Jenkins) og til spring boot admin, slik at den kan verifisere at løsningen er oppe
     if ($OK) {
@@ -375,7 +375,7 @@ try {
         skriv_steg "starter service $artifact"
         service-exe "start"
 
-        $OK = sjekk_app($healthUrl)
+        $OK = test_app_url($healthUrl)
 
         if ($OK) {
             skriv_steg "SEMI-SUKSESS: $artifact rullet tilbake til forrige versjon"
