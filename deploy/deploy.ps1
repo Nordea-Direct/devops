@@ -142,10 +142,6 @@ function stopp_app($serviceName) {
         }
     }
 }
-function test_func() {
-    skriv_steg "i test_func"
-    Write-Output "i test_func"
-}
 
 function test_app_url($url) {
     skriv_steg "i sjekk_app"
@@ -314,12 +310,10 @@ try {
     service-exe "start"
 
     Write-Output "skal sjekke om app starter"
-    test_func
-    test_app_url $healthUrl
-    $OK = test_app_url $healthUrl
+    $app_url_status = test_app_url $healthUrl
 
     # rapporter suksess til kaller (dvs Jenkins) og til spring boot admin, slik at den kan verifisere at løsningen er oppe
-    if ($OK) {
+    if ($app_url_status) {
         skriv_steg "SUKSESS: $artifact-$version ferdig deployet"
         if ($env:ENVIRONMENT -eq "PROD") {
             send-mailmessage -to Error-GB@gjensidigebank.no -subject "SUKSESS: $artifact-$version ferdig deployet" -from "$env:computername@prod.gjensidigebank.no" -SmtpServer 139.117.104.4
@@ -342,8 +336,7 @@ try {
     }
 } finally {
     # mulig rollback
-    if ($ServiceErIEnUgyldigState)
-    {
+    if ($ServiceErIEnUgyldigState) {
         skriv_steg "Deploy feiler, prøver å legge tilbake gammel versjon"
 
         stopp_app ($serviceName)
@@ -351,8 +344,7 @@ try {
         $rollbackKatalog = "$ROLLBACK_BASE_PATH/$artifact"
 
         # flytt jar fil, config filer etc til rollback katalog
-        try
-        {
+        try {
             skriv_steg "flytter gamle filer fra $rollbackKatalog tilbake til bruk"
 
             $source = $rollbackKatalog
@@ -360,9 +352,7 @@ try {
             $exclude = 'logs'
             Get-ChildItem $source -Recurse  | where { $_.FullName.Substring($exclude.length) -notmatch $exclude } |
                     Copy-Item -Destination { Join-Path $dest $_.FullName.Substring($source.length) }
-        }
-        catch
-        {
+        } catch {
             $feilmelding = hentFeilmelding($_)
             Write-Output "Feilet med aa kopiere tilbake siste versjon fra rollback katalogen for  $artifact : $feilmelding"
             exit 1
@@ -376,9 +366,9 @@ try {
         skriv_steg "starter service $artifact"
         service-exe "start"
 
-        $OK = test_app_url($healthUrl)
+        $app_url_status = test_app_url $healthUrl
 
-        if ($OK) {
+        if ($app_url_status) {
             skriv_steg "SEMI-SUKSESS: $artifact rullet tilbake til forrige versjon"
         } else {
             Write-Output "rollback feilet med Ukjent status:  $artifact kom ikke opp i loepet av $HEALT_WAIT_SECONDS sekunder"
