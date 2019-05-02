@@ -9,14 +9,11 @@ Param (
     [string]$version,
 
     [Parameter(Mandatory=$true)]
-    [ValidateSet("install","rollback")]
-    [string]$cmd,
-
-    [Parameter(Mandatory=$true)]
     [string]$healthUrl
 )
 
 $global:group,$global:artifact = $app.Split(':',2)
+$global:wc = New-Object System.Net.WebClient
 
 #konstanter
 $NEXUS_BASE = "http://nexus/service/local/repositories/releases/content/"
@@ -77,10 +74,101 @@ function skriv_steg($streng) {
     Write-Output "** $streng"
 }
 
-$wc = New-Object System.Net.WebClient
+function stopp_app($serviceName) {
+    $kjorer = $false
+    $serviceFinnes = $false
 
-if ($cmd -eq "install") {
+    #kjører appen ?
+    skriv_steg "sjekker om $serviceName kjoerer og er installert"
+    try {
+        $service = Get-Service -Name $serviceName -EA SilentlyContinue
+        if ($service) {
+            $serviceFinnes = $true
+            if ($service.Status -eq "Running") {
+                $kjorer = $true
+            }
+        }
+    } catch {
+        ## ok med tomt her
+    }
+    Write-Output "service $serviceName fikk statuser: kjorer $kjorer og serviceFinnes $serviceFinnes"
 
+    # hvis app kjører - varsel overvaakning om at vi gaar ned (spring boot admin)
+    skriv_steg "varsler spring boot admin om at vi gaar ned for $NOTIFY_SLEEP_TIME ms"
+    if ($kjorer) {
+        try {
+            $nvc = New-Object System.Collections.Specialized.NameValueCollection
+            $url = "http://localhost:4199/notifications/filters?applicationName=$artifact&ttl=$NOTIFY_SLEEP_TIME"
+            $out = $wc.UploadValues($url, 'POST', $nvc)
+        } catch {
+            $feilmelding= hentFeilmelding($_)
+            Write-Output "Feilet med pause notifikasjoner for $artifact : $feilmelding til url $url"
+            # ikke en kritisk feil som gjør at vi stopper deployment
+        }
+    }
+
+    # hvis app kjører - stopp app
+    if ($kjorer) {
+        skriv_steg "applikasjon kjoerer, stopper"
+        service-exe "stop"
+        sleep 1
+        if (sjekkOmKjoerer($serviceName)) {
+            Write-Output "Feilet med stoppe applikasjonen $serviceName, gir opp"
+            exit 1
+        }
+    }
+
+    # hvis service er installert - slett
+    if ($serviceFinnes) {
+        skriv_steg "service $serviceName er installert. Sletter"
+        $exefil = "$extractedDir\$artifact.exe"
+        service-exe-sub "uninstall" $exefil
+    }
+
+    # sjekk at service nå er borte, hvis den fantes
+    if ($serviceFinnes) {
+        try {
+            $service = Get-Service -Name $serviceName -EA SilentlyContinue
+            if ($service) {
+                Write-Output "Klarte ikke å slette service $serviceName. Gir opp"
+                exit 1
+            }
+        } catch {
+            ## ok med tomt her
+        }
+    }
+}
+
+function sjekk_app($healthUrl) {
+    # verifiser at prosess kjører etter x sekunder
+    # verifiser at health endepunkt svarer ok.
+    $loops = ($HEALT_WAIT_SECONDS / 5) + 1
+    $wc.Headers.Add("Content-Type", "application/json");
+
+    skriv_steg "venter $HEALT_WAIT_SECONDS ($loops steg a 5 sekunder) paa at appen starter"
+    $OK = $false
+    Do {
+        sleep 5
+        Write-Output "tester om applikasjonen kjoerer ved aa kalle health endepunktet $healthUrl"
+        try {
+            $response = $wc.DownloadString($healthUrl)
+        } catch {
+            Write-Output "Fikk feil: $($error[0])"
+        }
+        if ($response -match '"UP"') {
+            $OK = $true
+            Write-Output "Mottok UP fra health url $healthUrl for $artifact-$version"
+            break;
+        }
+        $loops = $loops - 1
+    } until ($loops -le 0)
+
+    return $OK
+}
+
+
+try {
+    $global:ServiceErIEnUgyldigState = $false
     $TMP_DIR = "$TMP_DIR_BASE\$artifact\$version"
 
     # oppretter tmp dir
@@ -149,70 +237,11 @@ if ($cmd -eq "install") {
     }
     Write-Output "fant serviceName $serviceName"
 
-    $kjorer = $false
-    $serviceFinnes = $false
-
-    #kjører appen ?
-    skriv_steg "sjekker om $serviceName kjoerer og er installert"
-    try {
-        $service = Get-Service -Name $serviceName -EA SilentlyContinue
-        if ($service) {
-            $serviceFinnes = $true
-            if ($service.Status -eq "Running") {
-                $kjorer = $true
-            }
-        }
-    } catch {
-        ## ok med tomt her
-    }
-    Write-Output "service $serviceName fikk statuser: kjorer $kjorer og serviceFinnes $serviceFinnes"
-
-    # hvis app kjører - varsel overvaakning om at vi gaar ned (spring boot admin)
-    skriv_steg "varsler spring boot admin om at vi gaar ned for $NOTIFY_SLEEP_TIME ms"
-    if ($kjorer) {
-        try {
-            $nvc = New-Object System.Collections.Specialized.NameValueCollection
-            $url = "http://localhost:4199/notifications/filters?applicationName=$artifact&ttl=$NOTIFY_SLEEP_TIME"
-            $out = $wc.UploadValues($url, 'POST', $nvc)
-        } catch {
-            $feilmelding= hentFeilmelding($_)
-            Write-Output "Feilet med pause notifikasjoner for $artifact : $feilmelding til url $url"
-            # ikke en kritisk feil som gjør at vi stopper deployment
-        }
-    }
-
     $global:appKatalog = "$BASE_PATH\$artifact"
 
-    # hvis app kjører - stopp app
-    if ($kjorer) {
-        skriv_steg "applikasjon kjoerer, stopper"
-        service-exe "stop"
-        sleep 1
-        if (sjekkOmKjoerer($serviceName)) {
-            Write-Output "Feilet med stoppe applikasjonen $serviceName, gir opp"
-            exit 1
-        }
-    }
+    stopp_app ($serviceName)
 
-    # hvis service er installert - slett
-    if ($serviceFinnes) {
-        skriv_steg "service $serviceName er installert. Sletter"
-        $exefil = "$extractedDir\$artifact.exe"
-        service-exe-sub "uninstall" $exefil
-    }
-
-    # sjekk at service nå er borte, hvis den fantes
-    if ($serviceFinnes) {
-        try {
-            $service = Get-Service -Name $serviceName -EA SilentlyContinue
-            if ($service) {
-                Write-Output "Klarte ikke å slette service $serviceName. Gir opp"
-                exit 1
-            }
-        } catch {
-            ## ok med tomt her
-        }
-   }
+    $global:ServiceErIEnUgyldigState = $true
 
     # sørg for at app katalog finnes
     skriv_steg "oppretter $appKatalog (hvis den ikke finnes)"
@@ -271,28 +300,7 @@ if ($cmd -eq "install") {
     skriv_steg "starter service $artifact"
     service-exe "start"
 
-    # verifiser at prosess kjører etter x sekunder
-    # verifiser at health endepunkt svarer ok.
-    $loops = ($HEALT_WAIT_SECONDS / 5) + 1
-    $wc.Headers.Add("Content-Type", "application/json");
-
-    skriv_steg "venter $HEALT_WAIT_SECONDS ($loops steg a 5 sekunder) paa at appen starter"
-    $OK = $false
-    Do {
-        sleep 5
-        Write-Output "tester om applikasjonen kjoerer ved aa kalle health endepunktet $healthUrl"
-        try {
-            $response = $wc.DownloadString($healthUrl)
-        } catch {
-            Write-Output "Fikk feil: $($error[0])"
-        }
-        if ($response -match '"UP"') {
-            $OK = $true
-            Write-Output "Mottok UP fra health url $healthUrl for $artifact-$version"
-            break;
-        }
-        $loops = $loops - 1
-    } until ($loops -le 0)
+    $OK = sjekk_app($healthUrl)
 
     # rapporter suksess til kaller (dvs Jenkins) og til spring boot admin, slik at den kan verifisere at løsningen er oppe
     if ($OK) {
@@ -300,8 +308,9 @@ if ($cmd -eq "install") {
         if ($env:ENVIRONMENT -eq "PROD") {
             send-mailmessage -to Error-GB@gjensidigebank.no -subject "SUKSESS: $artifact-$version ferdig deployet" -from "$env:computername@prod.gjensidigebank.no" -SmtpServer 139.117.104.4
         }
+        $global:ServiceErIEnUgyldigState = $false
     } else {
-        Write-Output "Ukjent status: $artifact-$version kom ikke opp i loepet av $HEALT_WAIT_SECONDS sekunder. Siste respons: $response"
+        Write-Output "Ukjent status: $artifact-$version kom ikke opp i loepet av $HEALT_WAIT_SECONDS sekunder"
     }
 
     # Tøm tmp dir
@@ -315,9 +324,49 @@ if ($cmd -eq "install") {
         Write-Output "Feilet med aa slette temp katalogen $TMP_DIR : $feilmelding"
         # ikke en kritisk feil her
     }
-} else {
-    # rollback
-}
+} finally {
+    # mulig rollback
+    if ($ServiceErIEnUgyldigState)
+    {
+        skriv_steg "Deploy feiler, prøver å legge tilbake gammel versjon"
 
-# todo:
-# Ved feil, skal scriptet rydde opp etter seg, og legge tilbake versjonen i rollback, og sette opp miljøet slik det var før deploy startet
+        stopp_app ($serviceName)
+
+        $rollbackKatalog = "$ROLLBACK_BASE_PATH/$artifact"
+
+        # flytt jar fil, config filer etc til rollback katalog
+        try
+        {
+            skriv_steg "flytter gamle filer fra $rollbackKatalog tilbake til bruk"
+
+            $source = $rollbackKatalog
+            $dest = $appKatalog
+            $exclude = 'logs'
+            Get-ChildItem $source -Recurse  | where { $_.FullName.Substring($exclude.length) -notmatch $exclude } |
+                    Copy-Item -Destination { Join-Path $dest $_.FullName.Substring($source.length) }
+        }
+        catch
+        {
+            $feilmelding = hentFeilmelding($_)
+            Write-Output "Feilet med aa kopiere tilbake siste versjon fra rollback katalogen for  $artifact : $feilmelding"
+            exit 1
+        }
+
+        # installer service
+        skriv_steg "installerer service i katalog $appKatalog"
+        service-exe "install"
+
+        # start service
+        skriv_steg "starter service $artifact"
+        service-exe "start"
+
+        $OK = sjekk_app($healthUrl)
+
+        if ($OK) {
+            skriv_steg "SEMI-SUKSESS: $artifact rullet tilbake til forrige versjon"
+        } else {
+            Write-Output "rollback feilet med Ukjent status:  $artifact kom ikke opp i loepet av $HEALT_WAIT_SECONDS sekunder"
+        }
+        exit 1
+    }
+}
