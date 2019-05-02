@@ -125,8 +125,12 @@ function stopp_app($serviceName) {
     # hvis service er installert - slett
     if ($serviceFinnes) {
         skriv_steg "service $serviceName er installert. Sletter"
-        $exefil = "$extractedDir\$artifact.exe"
-        service-exe-sub "uninstall" $exefil
+        if (Test-Path $extractedDir) {
+            $exefil = "$extractedDir\$artifact.exe"
+            service-exe-sub "uninstall" $exefil
+        } else {
+            service-exe "uninstall"
+        }
     }
 
     # sjekk at service nå er borte, hvis den fantes
