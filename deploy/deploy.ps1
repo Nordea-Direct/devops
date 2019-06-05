@@ -313,10 +313,10 @@ try {
     # rapporter suksess til kaller (dvs Jenkins) og til spring boot admin, slik at den kan verifisere at løsningen er oppe
     if ($app_url_status) {
         skriv_steg "SUKSESS: $artifact-$version ferdig deployet"
+        $global:ServiceErIEnUgyldigState = $false
         if ($env:ENVIRONMENT -eq "PROD") {
             send-mailmessage -to gb-prod@gjensidigebank.no -subject "SUKSESS: $artifact-$version ferdig deployet" -from "$env:computername@prod.gjensidigebank.no" -Body "Ny versjon av $artifact-$version er ute. For detaljer om hva som er lagt ut, finn dagens release her: $linkTilReleaseDok" -SmtpServer 139.117.104.4
         }
-        $global:ServiceErIEnUgyldigState = $false
     } else {
         Write-Output "Ukjent status: $artifact-$version kom ikke opp i loepet av $HEALTH_WAIT_SECONDS sekunder"
     }
