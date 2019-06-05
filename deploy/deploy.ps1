@@ -9,7 +9,10 @@ Param (
     [string]$version,
 
     [Parameter(Mandatory=$true)]
-    [string]$healthUrl
+    [string]$healthUrl,
+
+    [Parameter(Mandatory=$true)]
+    [string]$linkTilReleaseDok
 )
 
 $global:group,$global:artifact = $app.Split(':',2)
@@ -311,7 +314,7 @@ try {
     if ($app_url_status) {
         skriv_steg "SUKSESS: $artifact-$version ferdig deployet"
         if ($env:ENVIRONMENT -eq "PROD") {
-            send-mailmessage -to gb-prod@gjensidigebank.no -subject "SUKSESS: $artifact-$version ferdig deployet" -from "$env:computername@prod.gjensidigebank.no" -Body "Ny versjon av $artifact-$version er ute. For detaljer om hva som er lagt ut, finn dagens release her: <a href=""http://wiki/display/GB/Produksjonssetting+GBSL+2019"">Produksjonsetting 2019</a>" -SmtpServer 139.117.104.4
+            send-mailmessage -to gb-prod@gjensidigebank.no -subject "SUKSESS: $artifact-$version ferdig deployet" -from "$env:computername@prod.gjensidigebank.no" -BodyAsHTML "Ny versjon av $artifact-$version er ute. For detaljer om hva som er lagt ut, finn dagens release her: <a href="""$linkTilReleaseDok""">Produksjonsetting 2019</a>" -SmtpServer 139.117.104.4
         }
         $global:ServiceErIEnUgyldigState = $false
     } else {
