@@ -26,7 +26,7 @@ $BASE_PATH = "D:\gbapi"
 $ROLLBACK_BASE_PATH = "D:\gbapi_rollback"
 
 $NOTIFY_SLEEP_TIME = 3 * 60 * 1000 # 3 minutter
-$HEALTH_WAIT_SECONDS = 90
+$HEALTH_WAIT_SECONDS = 120
 
 function hentFeilmelding ($exception) {
     if ($exception.Exception.InnerException) {
