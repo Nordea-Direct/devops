@@ -126,7 +126,7 @@ function stopp_app($serviceName) {
     # hvis service er installert - slett
     if ($serviceFinnes) {
         skriv_steg "service $serviceName er installert. Sletter"
-        service-exe-sub "delete $$serviceName" 'sc'
+        service-exe-sub "delete $serviceName" 'sc'
     }
 
     # sjekk at service nå er borte, hvis den fantes
