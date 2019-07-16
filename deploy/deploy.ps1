@@ -126,7 +126,7 @@ function stopp_app($serviceName) {
     # hvis service er installert - slett
     if ($serviceFinnes) {
         skriv_steg "service $serviceName er installert. Sletter"
-        Remove-Service -Name $serviceName
+        service-exe-sub "delete $$serviceName" 'sc'
     }
 
     # sjekk at service nå er borte, hvis den fantes
@@ -231,8 +231,6 @@ try {
 
     $port = $appParams[0]
     $serviceDescription = $appParams[1]
-
-    Write-Output "leste $port and $serviceDescription"
 
     $serviceName = "$port" + "_" + "$artifact"
 
