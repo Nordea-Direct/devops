@@ -232,7 +232,9 @@ try {
     $port = $appParams[0]
     $serviceDescription = $appParams[1]
 
-    $serviceName = "$port_$artifact"
+    Write-Output "leste $port and $serviceDescription"
+
+    $serviceName = "$port" + "_" + "$artifact"
 
     Write-Output "setter serviceName til $serviceName"
 
