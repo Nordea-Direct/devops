@@ -223,12 +223,10 @@ try {
         exit 1
     }
 
-    $global:appKatalog = "$BASE_PATH\$artifact"
-
     # leser app parametre
-    skriv_steg "Leser applikasjonsParametre fra katalog $appKatalog"
+    skriv_steg "Leser applikasjonsParametre fra katalog $extractedDirg"
 
-    . "$appKatalog\params.ps1"
+    . "$extractedDir\params.ps1"
     $appParams = param
 
     $port = $arr[0]
@@ -237,6 +235,8 @@ try {
     $serviceName = "$port_$artifact"
 
     Write-Output "setter serviceName til $serviceName"
+
+    $global:appKatalog = "$BASE_PATH\$artifact"
 
     stopp_app ($serviceName)
     $global:ServiceErIEnUgyldigState = $true
