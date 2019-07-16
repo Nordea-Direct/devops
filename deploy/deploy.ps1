@@ -224,10 +224,10 @@ try {
     }
 
     # leser app parametre
-    skriv_steg "Leser applikasjonsParametre fra katalog $extractedDirg"
+    skriv_steg "Leser applikasjonsParametre fra katalog $extractedDir"
 
     . "$extractedDir\params.ps1"
-    $appParams = param
+    $appParams = params
 
     $port = $arr[0]
     $serviceDescription = $arr[1]
