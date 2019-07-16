@@ -229,8 +229,8 @@ try {
     . "$extractedDir\params.ps1"
     $appParams = params
 
-    $port = $arr[0]
-    $serviceDescription = $arr[1]
+    $port = $appParams[0]
+    $serviceDescription = $appParams[1]
 
     $serviceName = "$port_$artifact"
 
