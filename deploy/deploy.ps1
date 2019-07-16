@@ -295,7 +295,7 @@ try {
     skriv_steg "installerer service i katalog $appKatalog"
 
     service-exe "install $serviceName $appKatalog\$artifact.bat"
-    service-exe "set $serviceName Description \"$serviceDescription\""
+    service-exe "set $serviceName Description $serviceDescription"
 
     # start service
     skriv_steg "starter service $artifact"
