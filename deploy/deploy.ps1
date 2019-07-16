@@ -50,14 +50,15 @@ function sjekkOmKjoerer($serviceName) {
 }
 
 function service-exe($cmd) {
-    $exefil = "$appKatalog\$artifact.exe"
+
+    $exefil = "nssm.exe"
     service-exe-sub $cmd $exefil
 }
 
-function service-exe-sub([string]$cmd, [string]$exefil) {
+function service-exe-sub([string]$cmd, [string]$exefile) {
     Write-Output "cmd = $cmd, exefil = $exefil"
     try {
-        $p = Start-Process $exefil -ArgumentList $cmd -WorkingDirectory $appKatalog -wait -NoNewWindow -PassThru
+        $p = Start-Process $exefile -ArgumentList $cmd -WorkingDirectory $appKatalog -wait -NoNewWindow -PassThru
         $result = $p.HasExited
         if ($p.ExitCode) {
             throw "$cmd ga returkode $($p.ExitCode)"
@@ -77,6 +78,7 @@ function skriv_steg($streng) {
 function stopp_app($serviceName) {
     $kjorer = $false
     $serviceFinnes = $false
+    $service = 0
 
     #kjører appen ?
     skriv_steg "sjekker om $serviceName kjoerer og er installert"
@@ -110,8 +112,8 @@ function stopp_app($serviceName) {
     # hvis app kjører - stopp app
     if ($kjorer) {
         skriv_steg "applikasjon kjoerer, stopper"
-        service-exe "stop"
-        sleep 1
+        Stop-Service -Name $serviceName -EA SilentlyContinue
+        sleep 2
         if (sjekkOmKjoerer($serviceName)) {
             Write-Output "Feilet med stoppe applikasjonen $serviceName, gir opp"
             exit 1
@@ -121,12 +123,7 @@ function stopp_app($serviceName) {
     # hvis service er installert - slett
     if ($serviceFinnes) {
         skriv_steg "service $serviceName er installert. Sletter"
-        if (Test-Path $extractedDir) {
-            $exefil = "$extractedDir\$artifact.exe"
-            service-exe-sub "uninstall" $exefil
-        } else {
-            service-exe "uninstall"
-        }
+        Remove-Service -Name $serviceName
     }
 
     # sjekk at service nå er borte, hvis den fantes
@@ -223,28 +220,22 @@ try {
         exit 1
     }
 
-    # Finner service navn
-    $serviceName = $null
-    $xmlFile = "$extractedDir\$artifact.xml"
-    skriv_steg "Proever aa finne servicenavnet fra fila $xmlFile"
-    try {
-        $line = (Select-String -path $xmlFile -Pattern '<name>.+</name>').line
-        $serviceName = [regex]::match($line, '<name>(.+)</name>').Groups[1].Value
-    } catch {
-        $feilmelding= hentFeilmelding($_)
-        Write-Output "Feilet med aa lette etter service navn fra xml fila $xmlFile : $feilmelding"
-        exit 1
-    }
-    if (!$serviceName) {
-        Write-Output "Fant ikke serivce navn fra xml fila $xmlFile"
-        exit 1
-    }
-    Write-Output "fant serviceName $serviceName"
+    # leser app parametre
+    skriv_steg "Leser applikasjonsParametre fra katalog $appKatalog"
+
+    . "$appKatalog\params.ps1"
+    $appParams = param
+
+    $port = $arr[0]
+    $serviceDescription = $arr[1]
+
+    $serviceName = "$port_$artifact"
+
+    Write-Output "setter serviceName til $serviceName"
 
     $global:appKatalog = "$BASE_PATH\$artifact"
 
     stopp_app ($serviceName)
-
     $global:ServiceErIEnUgyldigState = $true
 
     # sørg for at app katalog finnes
@@ -292,17 +283,20 @@ try {
         Copy-Item -Path "$extractedDir\*" -Destination $appKatalog -Recurse -force
     } catch {
         $feilmelding= hentFeilmelding($_)
-        Write-Output "Feilet med aa kopiere inn versjon $version for  $artifact : $feilmelding"
+        Write-Output "Feilet med aa kopiere inn versjon $version for $artifact : $feilmelding"
         exit 1
     }
 
+
     # installer service
     skriv_steg "installerer service i katalog $appKatalog"
-    service-exe "install"
+
+    service-exe "install $serviceName $appKatalog\$artifact.bat"
+    service-exe "set $serviceName Description \"$serviceDescription\""
 
     # start service
     skriv_steg "starter service $artifact"
-    service-exe "start"
+    Start-Service -Name $serviceName
 
     Write-Output "skal sjekke om app starter"
     test_app_url $healthUrl
@@ -355,11 +349,12 @@ try {
 
         # installer service
         skriv_steg "installerer service i katalog $appKatalog"
-        service-exe "install"
+        service-exe "install $serviceName $appKatalog\$artifact.bat"
+        service-exe "set $serviceName Description \"$serviceDescription\""
 
         # start service
         skriv_steg "starter service $artifact"
-        service-exe "start"
+        Start-Service -Name $serviceName
 
         test_app_url $healthUrl
 
