@@ -9,7 +9,10 @@ Param (
     [string]$version,
 
     [Parameter(Mandatory=$true)]
-    [string]$healthUrl
+    [string]$healthUrl,
+
+    [Parameter(Mandatory=$true)]
+    [string]$linkTilReleaseDok
 )
 
 $global:group,$global:artifact = $app.Split(':',2)
@@ -23,7 +26,7 @@ $BASE_PATH = "D:\gbapi"
 $ROLLBACK_BASE_PATH = "D:\gbapi_rollback"
 
 $NOTIFY_SLEEP_TIME = 3 * 60 * 1000 # 3 minutter
-$HEALT_WAIT_SECONDS = 90
+$HEALTH_WAIT_SECONDS = 90
 
 function hentFeilmelding ($exception) {
     if ($exception.Exception.InnerException) {
@@ -143,10 +146,10 @@ function stopp_app($serviceName) {
 function test_app_url($url) {
     # verifiser at prosess kjører etter x sekunder
     # verifiser at health endepunkt svarer ok.
-    $loops = ($HEALT_WAIT_SECONDS / 5) + 1
+    $loops = ($HEALTH_WAIT_SECONDS / 5) + 1
     $wc.Headers.Add("Content-Type", "application/json");
 
-    skriv_steg "venter $HEALT_WAIT_SECONDS ($loops steg a 5 sekunder) paa at appen starter"
+    skriv_steg "venter $HEALTH_WAIT_SECONDS ($loops steg a 5 sekunder) paa at appen starter"
     $OK = $false
     Do {
         sleep 5
@@ -304,12 +307,12 @@ try {
     # rapporter suksess til kaller (dvs Jenkins) og til spring boot admin, slik at den kan verifisere at løsningen er oppe
     if ($app_url_status) {
         skriv_steg "SUKSESS: $artifact-$version ferdig deployet"
-        if ($env:ENVIRONMENT -eq "PROD") {
-            send-mailmessage -to Error-GB@gjensidigebank.no -subject "SUKSESS: $artifact-$version ferdig deployet" -from "$env:computername@prod.gjensidigebank.no" -SmtpServer 139.117.104.4
-        }
         $global:ServiceErIEnUgyldigState = $false
+        if ($env:ENVIRONMENT -eq "PROD") {
+            send-mailmessage -to gb-prod@gjensidigebank.no -subject "SUKSESS: $artifact-$version ferdig deployet" -from "$env:computername@prod.gjensidigebank.no" -Body "Ny versjon av $artifact-$version er ute. For detaljer om hva som er lagt ut, finn dagens release her: $linkTilReleaseDok" -SmtpServer 139.117.104.4
+        }
     } else {
-        Write-Output "Ukjent status: $artifact-$version kom ikke opp i loepet av $HEALT_WAIT_SECONDS sekunder"
+        Write-Output "Ukjent status: $artifact-$version kom ikke opp i loepet av $HEALTH_WAIT_SECONDS sekunder"
     }
 
     # Tøm tmp dir
@@ -361,7 +364,7 @@ try {
         if ($app_url_status) {
             skriv_steg "SEMI-FEIL: $artifact rullet tilbake til forrige versjon"
         } else {
-            Write-Output "rollback feilet med Ukjent status:  $artifact kom ikke opp i loepet av $HEALT_WAIT_SECONDS sekunder"
+            Write-Output "rollback feilet med Ukjent status:  $artifact kom ikke opp i loepet av $HEALTH_WAIT_SECONDS sekunder"
         }
         exit 1
     }
