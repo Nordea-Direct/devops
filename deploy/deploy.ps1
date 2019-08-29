@@ -61,6 +61,8 @@ function service-exe($cmd) {
 function service-exe-sub([string]$cmd, [string]$exefile) {
     Write-Output "cmd = $cmd, exefil = $exefil"
     try {
+        Write-Output "WorkingDirectory = $appKatalog"
+
         $p = Start-Process $exefile -ArgumentList $cmd -WorkingDirectory $appKatalog -wait -NoNewWindow -PassThru
         $result = $p.HasExited
         if ($p.ExitCode) {
