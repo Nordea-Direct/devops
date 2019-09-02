@@ -91,7 +91,9 @@ function stopp_app($serviceName) {
         $service = Get-Service -Name $serviceName -EA SilentlyContinue
         if ($service) {
             $serviceFinnes = $true
-            if ($service.Status -eq "Running") {
+            $ServiceStatus = $service.Status
+            skriv_steg "Service status is $ServiceStatus"
+            if (($service.Status -eq "Running") -or ($service.Status -eq "Paused")) {
                 $kjorer = $true
             }
         }
