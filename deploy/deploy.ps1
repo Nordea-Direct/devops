@@ -84,6 +84,7 @@ function stopp_app($serviceName) {
     $kjorer = $false
     $serviceFinnes = $false
     $service = 0
+    $paused = $false
 
     #kjører appen ?
     skriv_steg "sjekker om $serviceName kjoerer og er installert"
@@ -93,9 +94,13 @@ function stopp_app($serviceName) {
             $serviceFinnes = $true
             $ServiceStatus = $service.Status
             skriv_steg "Service status is $ServiceStatus"
-            if (($service.Status -eq "Running") -or ($service.Status -eq "Paused")) {
+            if ($service.Status -eq "Running") {
                 $kjorer = $true
             }
+
+             if ($service.Status -eq "Paused") {
+                $paused = $true
+             }
         }
     } catch {
         ## ok med tomt her
@@ -126,6 +131,15 @@ function stopp_app($serviceName) {
             exit 1
         }
     }
+
+     # hvis app paused - resume app
+    if ($paused) {
+            skriv_steg "applikasjon paused, resume"
+            Resume-Service -Name $serviceName -EA SilentlyContinue
+            skriv_steg "Unable to resume the paused service"
+            sleep 2
+
+        }
 
     # hvis service er installert - slett
     if ($serviceFinnes) {
