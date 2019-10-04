@@ -31,38 +31,39 @@ function sjekkOmKjoerer($serviceName) {
 
 function stopp_service($serviceName) {
     $kjorer = $false
-    $serviceFinnes = $false
     $service = 0
 
     # kjører servicen ?
-    skriv_steg "sjekker om $serviceName kjoerer og er installert"
+    skriv_steg "sjekker om $serviceName kjoerer"
 
     try {
         $service = Get-Service -Name $serviceName -EA SilentlyContinue
         if ($service) {
-            $serviceFinnes = $true
             $ServiceStatus = $service.Status
-            skriv_steg "Service status is $ServiceStatus"
             if ($service.Status -eq "Running") {
                 $kjorer = $true
             }
-
-
         }
     } catch {
         ## ok med tomt her
     }
 
-    Write-Output "service $serviceName fikk statuser: kjorer $kjorer og serviceFinnes $serviceFinnes"
+    if ($kjorer) {
+        Write-Output "service $serviceName kjorer"
+    } else {
+        Write-Output "service $serviceName kjorer IKKE"
+    }
 
     # hvis service kjører - stopp service
     if ($kjorer) {
-        skriv_steg "servicen kjoerer, stopper"
+        skriv_steg "stopper servicen $serviceName"
 
         Stop-Service -Name $serviceName -EA SilentlyContinue
+
         sleep 2
+
         if (sjekkOmKjoerer($serviceName)) {
-            Write-Output "Feilet med stoppe servicen $serviceName, gir opp"
+            Write-Output "feilet med stoppe servicen $serviceName, gir opp"
             exit 1
         }
     }
@@ -78,19 +79,19 @@ try {
 
     try {
         $output = New-Item -ItemType Directory -Force -Path $CONF_BACKUP_DIR
-        Write-Output "Opprettet backupmappe: $CONF_BACKUP_DIR"
+        Write-Output "opprettet backupmappe: $CONF_BACKUP_DIR"
     } catch {
         $feilmelding = hentFeilmelding($_)
-        Write-Output "Feilet med aa opprette mappen $CONF_BACKUP_DIR : $feilmelding"
+        Write-Output "feilet med aa opprette mappen $CONF_BACKUP_DIR : $feilmelding"
         exit 1
     }
 
     try {
         Copy-Item -Path "$CONF_DIR\*" -Destination $CONF_BACKUP_DIR -Recurse -force
-        Write-Output "Kopiert filer fra $CONF_DIR til $CONF_BACKUP_DIR"
+        Write-Output "kopiert filer fra $CONF_DIR til $CONF_BACKUP_DIR"
     } catch {
         $feilmelding = hentFeilmelding($_)
-        Write-Output "Feilet med aa kopiere filer fra $CONF_DIR til $CONF_BACKUP_DIR : $feilmelding"
+        Write-Output "feilet med aa kopiere filer fra $CONF_DIR til $CONF_BACKUP_DIR : $feilmelding"
         exit 1
     }
 
@@ -109,7 +110,7 @@ try {
     skriv_steg "starter service $servicename"
     
     Start-Service -Name $serviceName
-    Write-Output "Service $serviceName startet"
+    Write-Output "service $serviceName startet"
 
     skriv_steg "sjekker at service $servicename kjorer"
 
@@ -119,10 +120,10 @@ try {
 
     try {
         $output = Remove-Item -Recurse -Force $CONF_BACKUP_DIR
-        Write-Output "Slettet backupmappe: $CONF_BACKUP_DIR"
+        Write-Output "slettet backupmappe: $CONF_BACKUP_DIR"
     } catch {
         $feilmelding= hentFeilmelding($_)
-        Write-Output "Feilet med aa slette mappen $CONF_BACKUP_DIR : $feilmelding"
+        Write-Output "feilet med aa slette mappen $CONF_BACKUP_DIR : $feilmelding"
         exit 1
     }
 
