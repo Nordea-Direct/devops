@@ -5,7 +5,20 @@ function skriv_steg($streng) {
     Write-Output "** $streng"
 }
 
-
+function sjekkOmKjoerer($serviceName) {
+    $kjorer = $false
+    try {
+        $service = Get-Service -Name $serviceName -EA SilentlyContinue
+        if ($service) {
+            if ($service.Status -eq "Running") {
+                $kjorer = $true
+            }
+        }
+    } catch {
+        ## ok med tomt her
+    }
+    return $kjorer
+}
 
 function stopp_service($serviceName) {
     $kjorer = $false
