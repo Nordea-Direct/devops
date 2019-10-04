@@ -31,6 +31,8 @@ try {
 
     skriv_steg "sletter backup Apache Httpd-config"
     # slett conf.backup
+
+    skriv_steg "SUKSESS: config for $serviceName oppdatert"
     
 } finally {
     # hvis service ikke kjører:
