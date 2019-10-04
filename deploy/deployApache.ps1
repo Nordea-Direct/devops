@@ -195,20 +195,6 @@ try {
     } else {
         $global:ServiceErIEnUgyldigState = $true
     }
-
-    skriv_steg "sletter backup Apache Httpd-config"
-
-    try {
-        $output = Remove-Item -Recurse -Force $CONF_BACKUP_DIR
-        Write-Output "slettet backupmappe: $CONF_BACKUP_DIR"
-    } catch {
-        $feilmelding= hentFeilmelding($_)
-        Write-Output "feilet med aa slette mappen $CONF_BACKUP_DIR : $feilmelding"
-        exit 1
-    }
-
-    skriv_steg "SUKSESS: config for $serviceName oppdatert"
-    
 } finally {
     if ($ServiceErIEnUgyldigState) {
         Write-Output "FEIL Deploy feilet!"
