@@ -14,3 +14,5 @@ Param (
     [Parameter(Mandatory=$true)]
     [string]$linkTilReleaseDok
 )
+
+Write-Output "SCRIPTET KJØRER!"
