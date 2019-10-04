@@ -5,6 +5,15 @@ function skriv_steg($streng) {
     Write-Output "** $streng"
 }
 
+function hentFeilmelding ($exception) {
+    if ($exception.Exception.InnerException) {
+        $feilmelding = $_.Exception.InnerException.Message
+    } else {
+        $feilmelding= $_.Exception.Message
+    }
+    return $feilmelding
+}
+
 function sjekkOmKjoerer($serviceName) {
     $kjorer = $false
     try {
@@ -62,17 +71,28 @@ function stopp_service($serviceName) {
 try {
     $global:ServiceErIEnUgyldigState = $false
 
+    $CONF_DIR = "D:\Apache24\conf"
+    $CONF_BACKUP_DIR = "D:\Apache24\conf.backup"
+
     skriv_steg "backup Apache Httpd-config"
 
-    $CONF_BACKUP_DIR = "D:\Apache24\conf.backup"
     try {
         $output = New-Item -ItemType Directory -Force -Path $CONF_BACKUP_DIR
+        Write-Output "Opprettet backupmappe: $CONF_BACKUP_DIR"
     } catch {
-        $feilmelding = $_.Exception.Message
+        $feilmelding = hentFeilmelding($_)
         Write-Output "Feilet med aa opprette mappen $CONF_BACKUP_DIR : $feilmelding"
         exit 1
     }
-    # kopier conf/**/* -> conf.backup
+
+    try {
+        Copy-Item -Path "$CONF_DIR\*" -Destination $CONF_BACKUP_DIR -Recurse -force
+        Write-Output "Kopiert filer fra $CONF_DIR til $CONF_BACKUP_DIR"
+    } catch {
+        $feilmelding = hentFeilmelding($_)
+        Write-Output "Feilet med aa kopiere filer fra $CONF_DIR til $CONF_BACKUP_DIR: $feilmelding"
+        exit 1
+    }
 
     $serviceName = "Apache2.4"
 
@@ -87,22 +107,24 @@ try {
     # slett uploads/conf/* og uploads/conf/extra/*
 
     skriv_steg "starter service $servicename"
-    # start service
-    # sett i gyldig state
+    
+    Start-Service -Name $serviceName
+    Write-Output "Service $serviceName startet"
 
     skriv_steg "sjekker at service $servicename kjorer"
 
+    $global:ServiceErIEnUgyldigState = $false
+
     skriv_steg "sletter backup Apache Httpd-config"
 
-    try {
-        if (Test-Path $CONF_BACKUP_DIR) {
-            Get-ChildItem -Path "$CONF_BACKUP_DIR" -Recurse -EA SilentlyContinue | Remove-Item -Force -Recurse
-        }
-    } catch {
-        $feilmelding= hentFeilmelding($_)
-        Write-Output "Feilet med aa slette mappen $CONF_BACKUP_DIR : $feilmelding"
-        exit 1
-    }
+    #try {
+    #    $output = Remove-Item -Recurse -Force $CONF_BACKUP_DIR
+    #    Write-Output "Slettet backupmappe: $CONF_BACKUP_DIR"
+    #} catch {
+    #    $feilmelding= hentFeilmelding($_)
+    #    Write-Output "Feilet med aa slette mappen $CONF_BACKUP_DIR : $feilmelding"
+    #    exit 1
+    #}
 
     skriv_steg "SUKSESS: config for $serviceName oppdatert"
     
