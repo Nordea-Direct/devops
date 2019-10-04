@@ -102,7 +102,7 @@ try {
 
     skriv_steg "kopierer inn ny config"
     # slett conf/**/*
-    # kopier conf.base/* -> conf/
+    # kopier conf.base/**/* -> conf/
     # kopier uploads/conf/**/* -> conf/
     # slett uploads/conf/* og uploads/conf/extra/*
 
@@ -117,14 +117,14 @@ try {
 
     skriv_steg "sletter backup Apache Httpd-config"
 
-    #try {
-    #    $output = Remove-Item -Recurse -Force $CONF_BACKUP_DIR
-    #    Write-Output "Slettet backupmappe: $CONF_BACKUP_DIR"
-    #} catch {
-    #    $feilmelding= hentFeilmelding($_)
-    #    Write-Output "Feilet med aa slette mappen $CONF_BACKUP_DIR : $feilmelding"
-    #    exit 1
-    #}
+    try {
+        $output = Remove-Item -Recurse -Force $CONF_BACKUP_DIR
+        Write-Output "Slettet backupmappe: $CONF_BACKUP_DIR"
+    } catch {
+        $feilmelding= hentFeilmelding($_)
+        Write-Output "Feilet med aa slette mappen $CONF_BACKUP_DIR : $feilmelding"
+        exit 1
+    }
 
     skriv_steg "SUKSESS: config for $serviceName oppdatert"
     
