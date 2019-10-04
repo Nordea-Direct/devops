@@ -74,6 +74,8 @@ try {
 
     $CONF_DIR = "D:\Apache24\conf"
     $CONF_BACKUP_DIR = "D:\Apache24\conf.backup"
+    $CONF_BASE_DIR = "D:\Apache24\conf.base"
+    $UPLOADS_CONF_DIR = "D:\Apache24\uploads\conf"
 
     skriv_steg "backup Apache Httpd-config"
 
@@ -102,10 +104,69 @@ try {
     $global:ServiceErIEnUgyldigState = $true
 
     skriv_steg "kopierer inn ny config"
-    # slett conf/**/*
-    # kopier conf.base/**/* -> conf/
-    # kopier uploads/conf/**/* -> conf/
-    # slett uploads/conf/* og uploads/conf/extra/*
+
+    try {
+        $output = Remove-Item -Recurse -Force $CONF_DIR
+        Write-Output "slettet mappe: $CONF_DIR"
+    } catch {
+        $feilmelding= hentFeilmelding($_)
+        Write-Output "feilet med aa slette mappen $CONF_DIR : $feilmelding"
+        exit 1
+    }
+
+    try {
+        $output = New-Item -ItemType Directory -Force -Path $CONF_DIR
+        Write-Output "opprettet mappe: $CONF_DIR"
+    } catch {
+        $feilmelding = hentFeilmelding($_)
+        Write-Output "feilet med aa opprette mappen $CONF_DIR : $feilmelding"
+        exit 1
+    }
+
+    try {
+        Copy-Item -Path "$CONF_BASE_DIR\*" -Destination $CONF_DIR -Recurse -force
+        Write-Output "kopiert filer fra $CONF_BASE_DIR til $CONF_DIR"
+    } catch {
+        $feilmelding = hentFeilmelding($_)
+        Write-Output "feilet med aa kopiere filer fra $CONF_BASE_DIR til $CONF_DIR : $feilmelding"
+        exit 1
+    }
+
+    try {
+        Copy-Item -Path "$UPLOADS_CONF_DIR\*" -Destination $CONF_DIR -Recurse -force
+        Write-Output "kopiert filer fra $UPLOADS_CONF_DIR til $CONF_DIR"
+    } catch {
+        $feilmelding = hentFeilmelding($_)
+        Write-Output "feilet med aa kopiere filer fra $UPLOADS_CONF_DIR til $CONF_DIR : $feilmelding"
+        exit 1
+    }
+
+    try {
+        $output = Remove-Item -Recurse -Force $UPLOADS_CONF_DIR
+        Write-Output "slettet mappe: $UPLOADS_CONF_DIR"
+    } catch {
+        $feilmelding= hentFeilmelding($_)
+        Write-Output "feilet med aa slette mappen $UPLOADS_CONF_DIR : $feilmelding"
+        exit 1
+    }
+
+    try {
+        $output = New-Item -ItemType Directory -Force -Path $UPLOADS_CONF_DIR
+        Write-Output "opprettet mappe: $UPLOADS_CONF_DIR"
+    } catch {
+        $feilmelding = hentFeilmelding($_)
+        Write-Output "feilet med aa opprette mappen $UPLOADS_CONF_DIR : $feilmelding"
+        exit 1
+    }
+
+    try {
+        $output = New-Item -ItemType Directory -Force -Path $UPLOADS_CONF_DIR\extra
+        Write-Output "opprettet mappe: $UPLOADS_CONF_DIR\extra"
+    } catch {
+        $feilmelding = hentFeilmelding($_)
+        Write-Output "feilet med aa opprette mappen $UPLOADS_CONF_DIR\extra : $feilmelding"
+        exit 1
+    }
 
     skriv_steg "starter service $servicename"
     
