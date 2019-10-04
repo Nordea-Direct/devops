@@ -5,8 +5,49 @@ function skriv_steg($streng) {
     Write-Output "** $streng"
 }
 
+
+
+function stopp_service($serviceName) {
+    $kjorer = $false
+    $serviceFinnes = $false
+    $service = 0
+
+    # kjører servicen ?
+    skriv_steg "sjekker om $serviceName kjoerer og er installert"
+
+    try {
+        $service = Get-Service -Name $serviceName -EA SilentlyContinue
+        if ($service) {
+            $serviceFinnes = $true
+            $ServiceStatus = $service.Status
+            skriv_steg "Service status is $ServiceStatus"
+            if ($service.Status -eq "Running") {
+                $kjorer = $true
+            }
+
+
+        }
+    } catch {
+        ## ok med tomt her
+    }
+
+    Write-Output "service $serviceName fikk statuser: kjorer $kjorer og serviceFinnes $serviceFinnes"
+
+    # hvis service kjører - stopp service
+    if ($kjorer) {
+        skriv_steg "servicen kjoerer, stopper"
+
+        Stop-Service -Name $serviceName -EA SilentlyContinue
+        sleep 2
+        if (sjekkOmKjoerer($serviceName)) {
+            Write-Output "Feilet med stoppe servicen $serviceName, gir opp"
+            exit 1
+        }
+    }
+}
+
 try {
-    # sett i gyldig state
+    $global:ServiceErIEnUgyldigState = $false
 
     skriv_steg "backup Apache Httpd-config"
     # kopier conf/**/* -> conf.backup
@@ -14,8 +55,8 @@ try {
     $serviceName = "Apache2.4"
 
     skriv_steg "stopper service $servicename"
-    # stopp service
-    # sett i ugyldig state
+    stopp_service ($serviceName)
+    $global:ServiceErIEnUgyldigState = $true
 
     skriv_steg "kopierer inn ny config"
     # slett conf/**/*
