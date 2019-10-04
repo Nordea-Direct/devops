@@ -90,7 +90,7 @@ try {
         Write-Output "Kopiert filer fra $CONF_DIR til $CONF_BACKUP_DIR"
     } catch {
         $feilmelding = hentFeilmelding($_)
-        Write-Output "Feilet med aa kopiere filer fra $CONF_DIR til $CONF_BACKUP_DIR: $feilmelding"
+        Write-Output "Feilet med aa kopiere filer fra $CONF_DIR til $CONF_BACKUP_DIR : $feilmelding"
         exit 1
     }
 
