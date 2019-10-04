@@ -63,6 +63,15 @@ try {
     $global:ServiceErIEnUgyldigState = $false
 
     skriv_steg "backup Apache Httpd-config"
+
+    $CONF_BACKUP_DIR = "D:\Apache24\conf.backup"
+    try {
+        $output = New-Item -ItemType Directory -Force -Path $CONF_BACKUP_DIR
+    } catch {
+        $feilmelding = $_.Exception.Message
+        Write-Output "Feilet med aa opprette mappen $CONF_BACKUP_DIR : $feilmelding"
+        exit 1
+    }
     # kopier conf/**/* -> conf.backup
 
     $serviceName = "Apache2.4"
@@ -84,7 +93,16 @@ try {
     skriv_steg "sjekker at service $servicename kjorer"
 
     skriv_steg "sletter backup Apache Httpd-config"
-    # slett conf.backup
+
+    try {
+        if (Test-Path $CONF_BACKUP_DIR) {
+            Get-ChildItem -Path "$CONF_BACKUP_DIR" -Recurse -EA SilentlyContinue | Remove-Item -Force -Recurse
+        }
+    } catch {
+        $feilmelding= hentFeilmelding($_)
+        Write-Output "Feilet med aa slette mappen $CONF_BACKUP_DIR : $feilmelding"
+        exit 1
+    }
 
     skriv_steg "SUKSESS: config for $serviceName oppdatert"
     
