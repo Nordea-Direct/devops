@@ -127,8 +127,8 @@ try {
 
     slett_mappe $CONF_DIR
     opprett_mappe $CONF_DIR
-    kopier_filer $CONF_BASE_DIR, $CONF_DIR
-    kopier_filer $UPLOADS_CONF_DIR, $CONF_DIR
+    kopier_filer $CONF_BASE_DIR $CONF_DIR
+    kopier_filer $UPLOADS_CONF_DIR $CONF_DIR
     slett_mappe $UPLOADS_CONF_DIR
     opprett_mappe $UPLOADS_CONF_DIR
     opprett_mappe $UPLOADS_CONF_DIR\extra
@@ -157,7 +157,7 @@ try {
 
         slett_mappe $CONF_DIR
         opprett_mappe $CONF_DIR
-        kopier_filer $CONF_BACKUP_DIR, $CONF_DIR
+        kopier_filer $CONF_BACKUP_DIR $CONF_DIR
 
         skriv_steg "starter service $SERVICE_NAME"
         
