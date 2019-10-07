@@ -197,7 +197,7 @@ try {
     }
 } finally {
     if ($ServiceErIEnUgyldigState) {
-        skriv_steg "Deploy feiler, prøve å legge tilbake gammel versjon"
+        skriv_steg "Deploy feiler, prover a legge tilbake gammel versjon"
 
         try {
             $output = Remove-Item -Recurse -Force $CONF_DIR
@@ -205,6 +205,15 @@ try {
         } catch {
             $feilmelding= hentFeilmelding($_)
             Write-Output "feilet med aa slette mappen $CONF_DIR : $feilmelding"
+            exit 1  
+        }
+
+        try {
+            $output = New-Item -ItemType Directory -Force -Path $CONF_DIR
+            Write-Output "opprettet mappe: $CONF_DIR"
+        } catch {
+            $feilmelding = hentFeilmelding($_)
+            Write-Output "feilet med aa opprette mappen $CONF_DIR : $feilmelding"
             exit 1
         }
 
