@@ -197,11 +197,52 @@ try {
     }
 } finally {
     if ($ServiceErIEnUgyldigState) {
-        Write-Output "FEIL Deploy feilet!"
-    }
+        skriv_steg "Deploy feiler, prøve å legge tilbake gammel versjon"
 
-    # hvis service ikke kjører:
-    # - slett conf/**/*
-    # - kopier conf.backup/**/* -> conf/
-    # - start service
+        try {
+            $output = Remove-Item -Recurse -Force $CONF_DIR
+            Write-Output "slettet mappe: $CONF_DIR"
+        } catch {
+            $feilmelding= hentFeilmelding($_)
+            Write-Output "feilet med aa slette mappen $CONF_DIR : $feilmelding"
+            exit 1
+        }
+
+        try {
+            Copy-Item -Path "$CONF_BACKUP_DIR\*" -Destination $CONF_DIR -Recurse -force
+            Write-Output "kopiert filer fra $CONF_BACKUP_DIR til $CONF_DIR"
+        } catch {
+            $feilmelding = hentFeilmelding($_)
+            Write-Output "feilet med aa kopiere filer fra $CONF_BACKUP_DIR til $CONF_DIR : $feilmelding"
+            exit 1
+        }
+
+        skriv_steg "starter service $servicename"
+        
+        Start-Service -Name $serviceName
+        Write-Output "service $serviceName startet"
+
+        skriv_steg "sjekker at service $servicename kjorer"
+
+        sleep 2
+
+        $kjorer = sjekkOmKjoerer($serviceName))
+
+        skriv_steg "sletter backup Apache Httpd-config"
+
+        try {
+            $output = Remove-Item -Recurse -Force $CONF_BACKUP_DIR
+            Write-Output "slettet backupmappe: $CONF_BACKUP_DIR"
+        } catch {
+            $feilmelding= hentFeilmelding($_)
+            Write-Output "feilet med aa slette mappen $CONF_BACKUP_DIR : $feilmelding"
+            exit 1
+        }
+
+        if (sjekkOmKjoerer($serviceName)) {
+            skriv_steg "SEMI-FEIL: config rullet tilbake til forrige versjon"
+        } else {
+            Write-Output "Rollback til eldre versjon feilet. Service $serviceName startet ikke"
+        }
+    }
 }
