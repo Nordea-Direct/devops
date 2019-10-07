@@ -85,7 +85,7 @@ function opprett_mappe($dir) {
 function kopier_filer($src_dir, $dest_dir) {
     try {
         Copy-Item -Path "$src_dir\*" -Destination $dest_dir -Recurse -force
-        Write-Output "kopiert filer fra $src_dir til $dest_dir"
+        Write-Output "kopierte filer fra $src_dir til $dest_dir"
     } catch {
         $feilmelding = hentFeilmelding($_)
         Write-Output "feilet med aa kopiere filer fra $src_dir til $dest_dir : $feilmelding"
@@ -104,6 +104,22 @@ function slett_mappe($dir) {
     }
 }
 
+function opprett_mappe_og_kopier_filer($dir, $srcdir) {
+    opprett_mappe $dir
+    kopier_filer $srcdir $dir
+}
+
+function slett_og_opprett_mappe_og_kopier_filer($dir, $srcdir) {
+    slett_mappe $dir
+    opprett_mappe $dir
+    kopier_filer $srcdir $dir
+}
+
+function slett_og_opprett_mappe($dir) {
+    slett_mappe $dir
+    opprett_mappe $dir
+}
+
 try {
     $global:ServiceErIEnUgyldigState = $false
 
@@ -115,8 +131,7 @@ try {
 
     skriv_steg "backup Apache Httpd-config"
 
-    opprett_mappe $CONF_BACKUP_DIR
-    kopier_filer $CONF_DIR $CONF_BACKUP_DIR
+    opprett_mappe_og_kopier_filer $CONF_BACKUP_DIR $CONF_DIR
 
     skriv_steg "stopper service $SERVICE_NAME"
 
@@ -125,12 +140,9 @@ try {
 
     skriv_steg "kopierer inn ny config"
 
-    slett_mappe $CONF_DIR
-    opprett_mappe $CONF_DIR
-    kopier_filer $CONF_BASE_DIR $CONF_DIR
+    slett_og_opprett_mappe_og_kopier_filer $CONF_DIR $CONF_BASE_DIR
     kopier_filer $UPLOADS_CONF_DIR $CONF_DIR
-    slett_mappe $UPLOADS_CONF_DIR
-    opprett_mappe $UPLOADS_CONF_DIR
+    slett_og_opprett_mappe $UPLOADS_CONF_DIR
     opprett_mappe $UPLOADS_CONF_DIR\extra
 
     skriv_steg "starter service $SERVICE_NAME"
@@ -155,9 +167,7 @@ try {
     if ($ServiceErIEnUgyldigState) {
         skriv_steg "deploy feiler, prover a legge tilbake gammel versjon"
 
-        slett_mappe $CONF_DIR
-        opprett_mappe $CONF_DIR
-        kopier_filer $CONF_BACKUP_DIR $CONF_DIR
+        slett_og_opprett_mappe_og_kopier_filer $CONF_DIR $CONF_BACKUP_DIR
 
         skriv_steg "starter service $SERVICE_NAME"
         
