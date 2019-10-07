@@ -69,6 +69,28 @@ function stopp_service($serviceName) {
     }
 }
 
+function opprett_mappe($dir) {
+    try {
+        $output = New-Item -ItemType Directory -Force -Path $dir
+        Write-Output "opprettet mappe: $dir"
+    } catch {
+        $feilmelding = hentFeilmelding($_)
+        Write-Output "feilet med aa opprette mappen $dir : $feilmelding"
+        exit 1
+    }
+}
+
+function kopier_filer($src_dir, $dest_dir) {
+    try {
+        Copy-Item -Path "$src_dir\*" -Destination $dest_dir -Recurse -force
+        Write-Output "kopiert filer fra $src_dir til $dest_dir"
+    } catch {
+        $feilmelding = hentFeilmelding($_)
+        Write-Output "feilet med aa kopiere filer fra $src_dir til $dest_dir : $feilmelding"
+        exit 1
+    }
+}
+
 try {
     $global:ServiceErIEnUgyldigState = $false
 
@@ -76,31 +98,16 @@ try {
     $CONF_BACKUP_DIR = "D:\Apache24\conf.backup"
     $CONF_BASE_DIR = "D:\Apache24\conf.base"
     $UPLOADS_CONF_DIR = "D:\Apache24\uploads\conf"
+    $SERVICE_NAME = "Apache2.4"
 
     skriv_steg "backup Apache Httpd-config"
 
-    try {
-        $output = New-Item -ItemType Directory -Force -Path $CONF_BACKUP_DIR
-        Write-Output "opprettet backupmappe: $CONF_BACKUP_DIR"
-    } catch {
-        $feilmelding = hentFeilmelding($_)
-        Write-Output "feilet med aa opprette mappen $CONF_BACKUP_DIR : $feilmelding"
-        exit 1
-    }
+    opprett_mappe $CONF_BACKUP_DIR
+    kopier_filer $CONF_DIR, $CONF_BACKUP_DIR
 
-    try {
-        Copy-Item -Path "$CONF_DIR\*" -Destination $CONF_BACKUP_DIR -Recurse -force
-        Write-Output "kopiert filer fra $CONF_DIR til $CONF_BACKUP_DIR"
-    } catch {
-        $feilmelding = hentFeilmelding($_)
-        Write-Output "feilet med aa kopiere filer fra $CONF_DIR til $CONF_BACKUP_DIR : $feilmelding"
-        exit 1
-    }
+    skriv_steg "stopper service $SERVICE_NAME"
 
-    $serviceName = "Apache2.4"
-
-    skriv_steg "stopper service $servicename"
-    stopp_service ($serviceName)
+    stopp_service ($SERVICE_NAME)
     $global:ServiceErIEnUgyldigState = $true
 
     skriv_steg "kopierer inn ny config"
@@ -168,17 +175,17 @@ try {
         exit 1
     }
 
-    skriv_steg "starter service $servicename"
+    skriv_steg "starter service $SERVICE_NAME"
     
-    Start-Service -Name $serviceName
-    Write-Output "service $serviceName startet"
+    Start-Service -Name $SERVICE_NAME
+    Write-Output "service $SERVICE_NAME startet"
 
-    skriv_steg "sjekker at service $servicename kjorer"
+    skriv_steg "sjekker at service $SERVICE_NAME kjorer"
 
     sleep 2
 
-    if (sjekkOmKjoerer($serviceName)) {
-        Write-Output "service $serviceName kjorer"
+    if (sjekkOmKjoerer($SERVICE_NAME)) {
+        Write-Output "service $SERVICE_NAME kjorer"
 
         $global:ServiceErIEnUgyldigState = $false
 
@@ -193,9 +200,9 @@ try {
             exit 1
         }
 
-        skriv_steg "SUKSESS: config for $serviceName oppdatert"
+        skriv_steg "SUKSESS: config for $SERVICE_NAME oppdatert"
     } else {
-        Write-Output "service $serviceName kjorer IKKE"
+        Write-Output "service $SERVICE_NAME kjorer IKKE"
 
         $global:ServiceErIEnUgyldigState = $true
     }
@@ -230,17 +237,17 @@ try {
             exit 1
         }
 
-        skriv_steg "starter service $servicename"
+        skriv_steg "starter service $SERVICE_NAME"
         
-        Start-Service -Name $serviceName
-        Write-Output "service $serviceName startet"
+        Start-Service -Name $SERVICE_NAME
+        Write-Output "service $SERVICE_NAME startet"
 
-        skriv_steg "sjekker at service $servicename kjorer"
+        skriv_steg "sjekker at service $SERVICE_NAME kjorer"
 
         sleep 2
 
-        if (sjekkOmKjoerer($serviceName)) {
-            Write-Output "service $serviceName kjorer"
+        if (sjekkOmKjoerer($SERVICE_NAME)) {
+            Write-Output "service $SERVICE_NAME kjorer"
 
             skriv_steg "sletter backup Apache Httpd-config"
 
@@ -255,9 +262,9 @@ try {
 
             skriv_steg "SEMI-FEIL: config rullet tilbake til forrige versjon"
         } else {
-            Write-Output "service $serviceName kjorer IKKE"
+            Write-Output "service $SERVICE_NAME kjorer IKKE"
 
-            skriv_steg "FEIL: rollback til eldre versjon feilet. Service $serviceName startet ikke"
+            skriv_steg "FEIL: rollback til eldre versjon feilet. Service $SERVICE_NAME startet ikke"
         }
     }
 }
