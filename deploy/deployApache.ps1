@@ -226,8 +226,6 @@ try {
 
         sleep 2
 
-        $kjorer = sjekkOmKjoerer($serviceName))
-
         skriv_steg "sletter backup Apache Httpd-config"
 
         try {
