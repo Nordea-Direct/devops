@@ -102,8 +102,8 @@ try {
 
     skriv_steg "backup Apache Httpd-config"
 
-    opprett_mappe($CONF_BACKUP_DIR)
-    kopier_filer($CONF_DIR, $CONF_BACKUP_DIR)
+    opprett_mappe $CONF_BACKUP_DIR
+    kopier_filer $CONF_DIR $CONF_BACKUP_DIR
 
     skriv_steg "stopper service $SERVICE_NAME"
 
