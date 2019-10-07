@@ -180,16 +180,16 @@ try {
     if (sjekkOmKjoerer($serviceName)) {
         $global:ServiceErIEnUgyldigState = $false
 
-        skriv_steg "sletter backup Apache Httpd-config"
-
-        try {
-            $output = Remove-Item -Recurse -Force $CONF_BACKUP_DIR
-            Write-Output "slettet backupmappe: $CONF_BACKUP_DIR"
-        } catch {
-            $feilmelding= hentFeilmelding($_)
-            Write-Output "feilet med aa slette mappen $CONF_BACKUP_DIR : $feilmelding"
-            exit 1
-        }
+#        skriv_steg "sletter backup Apache Httpd-config"
+#
+#        try {
+#            $output = Remove-Item -Recurse -Force $CONF_BACKUP_DIR
+#            Write-Output "slettet backupmappe: $CONF_BACKUP_DIR"
+#        } catch {
+#            $feilmelding= hentFeilmelding($_)
+#            Write-Output "feilet med aa slette mappen $CONF_BACKUP_DIR : $feilmelding"
+#            exit 1
+#        }
 
         skriv_steg "SUKSESS: config for $serviceName oppdatert"
     } else {
@@ -228,14 +228,14 @@ try {
 
         skriv_steg "sletter backup Apache Httpd-config"
 
-        try {
-            $output = Remove-Item -Recurse -Force $CONF_BACKUP_DIR
-            Write-Output "slettet backupmappe: $CONF_BACKUP_DIR"
-        } catch {
-            $feilmelding= hentFeilmelding($_)
-            Write-Output "feilet med aa slette mappen $CONF_BACKUP_DIR : $feilmelding"
-            exit 1
-        }
+#        try {
+#            $output = Remove-Item -Recurse -Force $CONF_BACKUP_DIR
+#            Write-Output "slettet backupmappe: $CONF_BACKUP_DIR"
+#        } catch {
+#            $feilmelding= hentFeilmelding($_)
+#            Write-Output "feilet med aa slette mappen $CONF_BACKUP_DIR : $feilmelding"
+#            exit 1
+#        }
 
         if (sjekkOmKjoerer($serviceName)) {
             skriv_steg "SEMI-FEIL: config rullet tilbake til forrige versjon"
