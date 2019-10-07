@@ -178,13 +178,15 @@ try {
     sleep 2
 
     if (sjekkOmKjoerer($serviceName)) {
+        Write-Output "service $serviceName kjorer"
+
         $global:ServiceErIEnUgyldigState = $false
 
         skriv_steg "sletter backup Apache Httpd-config"
 
         try {
             $output = Remove-Item -Recurse -Force $CONF_BACKUP_DIR
-            Write-Output "slettet backupmappe: $CONF_BACKUP_DIR"
+            Write-Output "slettet mappe: $CONF_BACKUP_DIR"
         } catch {
             $feilmelding= hentFeilmelding($_)
             Write-Output "feilet med aa slette mappen $CONF_BACKUP_DIR : $feilmelding"
@@ -193,11 +195,13 @@ try {
 
         skriv_steg "SUKSESS: config for $serviceName oppdatert"
     } else {
+        Write-Output "service $serviceName kjorer IKKE"
+
         $global:ServiceErIEnUgyldigState = $true
     }
 } finally {
     if ($ServiceErIEnUgyldigState) {
-        skriv_steg "Deploy feiler, prover a legge tilbake gammel versjon"
+        skriv_steg "deploy feiler, prover a legge tilbake gammel versjon"
 
         try {
             $output = Remove-Item -Recurse -Force $CONF_DIR
@@ -235,21 +239,25 @@ try {
 
         sleep 2
 
-        skriv_steg "sletter backup Apache Httpd-config"
-
-        try {
-            $output = Remove-Item -Recurse -Force $CONF_BACKUP_DIR
-            Write-Output "slettet backupmappe: $CONF_BACKUP_DIR"
-        } catch {
-            $feilmelding= hentFeilmelding($_)
-            Write-Output "feilet med aa slette mappen $CONF_BACKUP_DIR : $feilmelding"
-            exit 1
-        }
-
         if (sjekkOmKjoerer($serviceName)) {
+            Write-Output "service $serviceName kjorer"
+
+            skriv_steg "sletter backup Apache Httpd-config"
+
+            try {
+                $output = Remove-Item -Recurse -Force $CONF_BACKUP_DIR
+                Write-Output "slettet backupmappe: $CONF_BACKUP_DIR"
+            } catch {
+                $feilmelding= hentFeilmelding($_)
+                Write-Output "feilet med aa slette mappen $CONF_BACKUP_DIR : $feilmelding"
+                exit 1
+            }
+
             skriv_steg "SEMI-FEIL: config rullet tilbake til forrige versjon"
         } else {
-            Write-Output "Rollback til eldre versjon feilet. Service $serviceName startet ikke"
+            Write-Output "service $serviceName kjorer IKKE"
+
+            skriv_steg "FEIL: rollback til eldre versjon feilet. Service $serviceName startet ikke"
         }
     }
 }
