@@ -1,7 +1,7 @@
 [CmdletBinding()]
 Param (
     [Parameter(Mandatory=$true)]
-    [ValidatePattern('.+:.+')]
+    [ValidatePattern('.+')]
     [string]$app
 )
 
