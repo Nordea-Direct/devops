@@ -1,5 +1,9 @@
 [CmdletBinding()]
-Param ()
+Param (
+    [Parameter(Mandatory=$true)]
+    [ValidatePattern('.+')]
+    [string]$APP
+)
 
 function skriv_steg($streng) {
     Write-Output "** $streng"
