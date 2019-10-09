@@ -1,8 +1,8 @@
 [CmdletBinding()]
 Param (
     [Parameter(Mandatory=$true)]
-    [ValidatePattern('.+')]
-    [string]$APP
+    [ValidatePattern('.+:.+')]
+    [string]$app
 )
 
 function skriv_steg($streng) {
@@ -68,41 +68,38 @@ function slett_og_opprett_mappe($dir) {
 }
 
 try {
-
     $DOCROOTS_DIR = "D:\Apache24\docroots"
-    $APP_BACKUP_DIR = "D:\Apache24\apps.backup\$APP"
+    $APP_BACKUP_DIR = "D:\Apache24\apps.backup\$app"
     $UPLOADS_DIR = "D:\Apache24\uploads"
 
     skriv_steg "backup app $APP"
 
-    opprett_mappe_og_kopier_filer $APP_BACKUP_DIR "$DOCROOTS_DIR\$APP"
+#    opprett_mappe_og_kopier_filer $APP_BACKUP_DIR "$DOCROOTS_DIR\$app"
 
-    skriv_steg "kopierer inn ny versjon av app $APP"
+    skriv_steg "kopierer inn ny versjon av app $app"
 
-    kopier_filer "$UPLOADS_DIR\$APP" "$DOCROOTS_DIR\$APP"
-
-
+#    kopier_filer "$UPLOADS_DIR\$APP" "$DOCROOTS_DIR\$app"
 } finally {
     if ($ServiceErIEnUgyldigState) {
         skriv_steg "deploy feiler, prover a legge tilbake gammel versjon"
 
-        slett_og_opprett_mappe_og_kopier_filer $DOCROOTS_DIR $CONF_BACKUP_DIR
-
-        sleep 2
-
-        if (sjekkOmKjoerer($SERVICE_NAME)) {
-            Write-Output "service $SERVICE_NAME kjorer"
-
-            slett_mappe $CONF_BACKUP_DIR
-
-            Write-Output "SEMI-FEIL: config rullet tilbake til forrige versjon"
-        } else {
-            Write-Output "service $SERVICE_NAME kjorer IKKE"
-
-            Write-Output "FEIL: rollback til eldre versjon feilet. Service $SERVICE_NAME startet ikke"
-        }
+#        slett_og_opprett_mappe_og_kopier_filer $DOCROOTS_DIR $CONF_BACKUP_DIR
+#
+#        sleep 2
+#
+#        if (sjekkOmKjoerer($SERVICE_NAME)) {
+#            Write-Output "service $SERVICE_NAME kjorer"
+#
+#            slett_mappe $CONF_BACKUP_DIR
+#
+#            Write-Output "SEMI-FEIL: config rullet tilbake til forrige versjon"
+#        } else {
+#            Write-Output "service $SERVICE_NAME kjorer IKKE"
+#
+#            Write-Output "FEIL: rollback til eldre versjon feilet. Service $SERVICE_NAME startet ikke"
+#        }
     } else {
-        slett_mappe $APP_BACKUP_DIR
+#        slett_mappe $APP_BACKUP_DIR
 
         Write-Output "SUKSESS: ny versjon av app $APP er ute"
     }
