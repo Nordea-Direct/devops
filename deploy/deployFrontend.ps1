@@ -70,7 +70,7 @@ function slett_og_opprett_mappe($dir) {
 try {
     $AppErIEnUgyldigState = $false
 
-    $APP_DIR = $DOCROOTS_DIR\$app
+    $APP_DIR = "$DOCROOTS_DIR\$app"
     $APP_BACKUP_DIR = "D:\Apache24\apps.backup\$app"
     $APP_UPLOADS_DIR = "D:\Apache24\uploads\$app"
 
