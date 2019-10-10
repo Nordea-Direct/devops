@@ -68,36 +68,32 @@ function slett_og_opprett_mappe($dir) {
 }
 
 try {
-    $DOCROOTS_DIR = "D:\Apache24\docroots"
+    $AppErIEnUgyldigState = $false
+
+    $APP_DIR = $DOCROOTS_DIR\$app
     $APP_BACKUP_DIR = "D:\Apache24\apps.backup\$app"
-    $UPLOADS_DIR = "D:\Apache24\uploads"
+    $APP_UPLOADS_DIR = "D:\Apache24\uploads\$app"
 
     skriv_steg "backup app $APP"
 
-#    opprett_mappe_og_kopier_filer $APP_BACKUP_DIR "$DOCROOTS_DIR\$app"
+    opprett_mappe_og_kopier_filer $APP_BACKUP_DIR $APP_DIR
 
     skriv_steg "kopierer inn ny versjon av app $app"
 
-#    kopier_filer "$UPLOADS_DIR\$APP" "$DOCROOTS_DIR\$app"
-} finally {
-    if ($ServiceErIEnUgyldigState) {
-        skriv_steg "deploy feiler, prover a legge tilbake gammel versjon"
+    slett_mappe $APP_DIR
+    opprett_mappe $APP_DIR
+    kopier_filer $APP_UPLOADS_DIR $APP_DIR
 
-#        slett_og_opprett_mappe_og_kopier_filer $DOCROOTS_DIR $CONF_BACKUP_DIR
-#
-#        sleep 2
-#
-#        if (sjekkOmKjoerer($SERVICE_NAME)) {
-#            Write-Output "service $SERVICE_NAME kjorer"
-#
-#            slett_mappe $CONF_BACKUP_DIR
-#
-#            Write-Output "SEMI-FEIL: config rullet tilbake til forrige versjon"
-#        } else {
-#            Write-Output "service $SERVICE_NAME kjorer IKKE"
-#
-#            Write-Output "FEIL: rollback til eldre versjon feilet. Service $SERVICE_NAME startet ikke"
-#        }
+    skriv_steg "sjekker om app er deployet riktig"
+
+    Write-Output "TODO: sjekk app-helse e.l."
+} finally {
+    if ($AppErIEnUgyldigState) {
+        skriv_steg "deploy feiler, legger tilbake gammel versjon"
+
+        slett_og_opprett_mappe_og_kopier_filer $APP_DIR $APP_BACKUP_DIR
+
+        Write-Output "SEMI-FEIL: appen $app rullet tilbake til forrige versjon"
     } else {
 #        slett_mappe $APP_BACKUP_DIR
 
