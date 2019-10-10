@@ -83,6 +83,7 @@ try {
     slett_mappe $APP_DIR
     opprett_mappe $APP_DIR
     kopier_filer $APP_UPLOADS_DIR $APP_DIR
+    slett_og_opprett_mappe $APP_UPLOADS_DIR
 
     skriv_steg "sjekker om app er deployet riktig"
 
@@ -95,7 +96,7 @@ try {
 
         Write-Output "SEMI-FEIL: appen $app rullet tilbake til forrige versjon"
     } else {
-#        slett_mappe $APP_BACKUP_DIR
+        slett_mappe $APP_BACKUP_DIR
 
         Write-Output "SUKSESS: ny versjon av app $APP er ute"
     }
