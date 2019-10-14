@@ -80,10 +80,10 @@ function test_app_url($url) {
     }
     if (($response.StatusCode -as [int]) -eq 200) {
         $global:app_url_status = $true
-        Write-Output "app svarer med 200 OK paa url $url"
+        Write-Output "app svarer med 200 OK paa helse-url: $url"
     } else {
         $global:app_url_status = $false
-        Write-Output "app svarer IKKE med 200 OK paa url: $url"
+        Write-Output "app svarer IKKE med 200 OK paa helse-url: $url"
     }
 }
 
