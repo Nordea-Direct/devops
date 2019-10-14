@@ -1,8 +1,10 @@
 [CmdletBinding()]
 Param (
     [Parameter(Mandatory=$true)]
-    [ValidatePattern('.+')]
-    [string]$app
+    [string]$app,
+
+    [Parameter(Mandatory=$true)]
+    [string]$healthUrl
 )
 
 function skriv_steg($streng) {
@@ -67,8 +69,26 @@ function slett_og_opprett_mappe($dir) {
     opprett_mappe $dir
 }
 
+function test_app_url($url) {
+    Write-Output "sjekker om app svarer på helse-url: $url"
+        
+    try {
+        $webRequest = [net.WebRequest]::Create($url)
+        $response = $webRequest.GetResponse()
+    } catch {
+        Write-Output "Fikk feil: $($error[0])"
+    }
+    if (($response.StatusCode -as [int]) -eq 200) {
+        $global:app_url_status = $true
+        Write-Output "app svarer med 200 OK paa url $url"
+    } else {
+        $global:app_url_status = $false
+        Write-Output "app svarer IKKE med 200 OK paa url $url: $response.StatusCode"
+    }
+}
+
 try {
-    $AppErIEnUgyldigState = $false
+    $global:AppErIEnUgyldigState = $false
 
     $APP_DIR = "D:\Apache24\docroots\$app"
     $APP_BACKUP_DIR = "D:\Apache24\apps.backup\$app"
@@ -87,12 +107,16 @@ try {
 
     skriv_steg "sjekker om app er deployet riktig"
 
-    Write-Output "TODO: sjekk app-helse e.l."
+    test_app_url $healthUrl
+
+    $global:AppErIEnUgyldigState = $app_url_status
 } finally {
     if ($AppErIEnUgyldigState) {
         skriv_steg "deploy feiler, legger tilbake gammel versjon"
 
         slett_og_opprett_mappe_og_kopier_filer $APP_DIR $APP_BACKUP_DIR
+
+        slett_mappe $APP_BACKUP_DIR
 
         Write-Output "SEMI-FEIL: appen $app rullet tilbake til forrige versjon"
     } else {
