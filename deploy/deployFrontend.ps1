@@ -70,7 +70,7 @@ function slett_og_opprett_mappe($dir) {
 }
 
 function test_app_url($url) {
-    Write-Output "sjekker om app svarer på helse-url: $url"
+    Write-Output "sjekker om app svarer paa helse-url: $url"
         
     try {
         $webRequest = [net.WebRequest]::Create($url)
@@ -109,7 +109,7 @@ try {
 
     test_app_url $healthUrl
 
-    $global:AppErIEnUgyldigState = $app_url_status
+    $global:AppErIEnUgyldigState = -not $app_url_status
 } finally {
     if ($AppErIEnUgyldigState) {
         skriv_steg "deploy feiler, legger tilbake gammel versjon"
