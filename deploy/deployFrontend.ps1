@@ -83,7 +83,7 @@ function test_app_url($url) {
         Write-Output "app svarer med 200 OK paa url $url"
     } else {
         $global:app_url_status = $false
-        Write-Output "app svarer IKKE med 200 OK paa url $url: $response.StatusCode"
+        Write-Output "app svarer IKKE med 200 OK paa url ${url}: $response.StatusCode"
     }
 }
 
