@@ -142,8 +142,7 @@ try {
 
     slett_og_opprett_mappe_og_kopier_filer $CONF_DIR $CONF_BASE_DIR
     kopier_filer $UPLOADS_CONF_DIR $CONF_DIR
-    slett_og_opprett_mappe $UPLOADS_CONF_DIR
-    opprett_mappe $UPLOADS_CONF_DIR\extra
+    slett_mappe $UPLOADS_CONF_DIR
 
     skriv_steg "starter service $SERVICE_NAME"
     
