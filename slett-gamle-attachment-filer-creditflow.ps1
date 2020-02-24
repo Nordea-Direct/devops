@@ -1,0 +1,1 @@
+Get-ChildItem -Path D:\Crif\CreditFlow\Configuration\attachments | Where-Object {($_.LastWriteTime -lt (Get-Date).AddMonths(-6))} | Remove-Item
