@@ -53,24 +53,26 @@ function sjekkOmKjoerer($serviceName) {
 }
 
 function service-exe($cmd) {
-
     $exefil = "nssm.exe"
-    service-exe-sub $cmd $exefil
+    kjoer-exe $cmd $exefil
 }
 
-function service-exe-sub([string]$cmd, [string]$exefile) {
-    Write-Output "cmd = $cmd, exefil = $exefil"
-    try {
-        Write-Output "WorkingDirectory = $appKatalog"
+function install-service($serviceName, $path, $serviceDescription) {
+    service-exe "install $serviceName $path.bat"
+    service-exe "set $serviceName Description \"$serviceDescription\""
+    service-exe "set $serviceName AppThrottle 60000"
+    service-exe "set $serviceName Start SERVICE_DELAYED_AUTO_START"
+}
 
-        $p = Start-Process $exefile -ArgumentList $cmd -WorkingDirectory $appKatalog -wait -NoNewWindow -PassThru
-        $result = $p.HasExited
-        if ($p.ExitCode) {
-            throw "$cmd ga returkode $($p.ExitCode)"
-        }
-    } catch {
-        $feilmelding= hentFeilmelding($_)
-        Write-Output "Feilet med aa $cmd service for $artifact-$version : $feilmelding"
+function kjoer-exe([string]$cmd, [string]$exefile) {
+    Write-Output "cmd = $cmd, exefil = $exefile"
+    Write-Output "WorkingDirectory = $appKatalog"
+
+    $p = Start-Process $exefile -ArgumentList $cmd -WorkingDirectory $appKatalog -wait -NoNewWindow -PassThru
+    $result = $p.HasExited
+
+    if ($p.ExitCode) {
+        Write-Output "Feilet med aa kjøre $exefile $cmd for $artifact-$version : $cmd ga returkode $($p.ExitCode)"
         Write-Output "proevde: Start-Process $exefil -ArgumentList $cmd -WorkingDirectory $appKatalog -wait -NoNewWindow -PassThru"
         exit 1
     }
@@ -135,7 +137,7 @@ function stopp_app($serviceName) {
     # hvis service er installert - slett
     if ($serviceFinnes) {
         skriv_steg "service $serviceName er installert. Sletter"
-        service-exe-sub "delete $serviceName" 'sc'
+        kjoer-exe "delete $serviceName" 'sc'
     }
 
     # sjekk at service nå er borte, hvis den fantes
@@ -303,8 +305,7 @@ try {
     # installer service
     skriv_steg "installerer service i katalog $appKatalog"
 
-    service-exe "install $serviceName $appKatalog\$artifact.bat"
-    service-exe "set $serviceName Description $serviceDescription"
+    install-service $serviceName "$appKatalog\$artifact.bat" $serviceDescription
 
     # start service
     skriv_steg "starter service $artifact"
@@ -361,8 +362,7 @@ try {
 
         # installer service
         skriv_steg "installerer service i katalog $appKatalog"
-        service-exe "install $serviceName $appKatalog\$artifact.bat"
-        service-exe "set $serviceName Description \"$serviceDescription\""
+        install-service $serviceName "$appKatalog\$artifact.bat" $serviceDescription
 
         # start service
         skriv_steg "starter service $artifact"
