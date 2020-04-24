@@ -58,7 +58,7 @@ function service-exe($cmd) {
 }
 
 function install-service($serviceName, $path, $serviceDescription) {
-    service-exe "install $serviceName $path.bat"
+    service-exe "install $serviceName $path"
     service-exe "set $serviceName Description \"$serviceDescription\""
     service-exe "set $serviceName AppThrottle 60000"
     service-exe "set $serviceName Start SERVICE_DELAYED_AUTO_START"
