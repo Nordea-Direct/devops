@@ -94,11 +94,11 @@ function Invoke-Process([string]$FilePath, [string]$ArgumentList) {
 }
 
 function Write-Step([string] $description) {
-    Write-Host "** $description"
+    Write-Information "** $description"
 }
 
 function Write-SubStep([string] $description) {
-    Write-Host "      $description"
+    Write-Information "      $description"
 }
 
 function Remove-Service([System.ServiceProcess.ServiceController] $service) {
