@@ -336,5 +336,7 @@ try {
             Write-Error "ERROR: Rollback failed with unkown status"
         }
         exit 1
+    } else {
+        exit 0
     }
 }
