@@ -103,7 +103,7 @@ function Write-SubStep([string] $description) {
 
 function Remove-Service([System.ServiceProcess.ServiceController] $service) {
     Write-SubStep "Deleting service $($service.ServiceName)"
-    Invoke-ServiceControll "delete $($service.ServiceName)"
+    Invoke-ServiceControl "delete $($service.ServiceName)"
     Start-Sleep 2
     if (Get-Service $service.ServiceName -EA SilentlyContinue) {
         Write-Output "Faild to remove $serviceName. Exiting."
@@ -204,7 +204,7 @@ try {
         $wc.DownloadFile($url, "$TMP_DIR\$filename")
     } catch {
         $feilmelding= hentFeilmelding($_)
-        Write-Error "Dowloanding $filename from $url failed: $feilmelding"
+        Write-Error "Downloading $filename from $url failed: $feilmelding"
         exit 1
     }
 
@@ -324,7 +324,7 @@ try {
                     Copy-Item -Destination { Join-Path $dest $_.FullName.Substring($source.length) }
         } catch {
             $feilmelding = hentFeilmelding($_)
-            Write-Error "Moveing old application files from $rollbackKatalog back into $appKatalog failed: $feilmelding"
+            Write-Error "Moving old application files from $rollbackKatalog back into $appKatalog failed: $feilmelding"
             exit 1
         }
 
