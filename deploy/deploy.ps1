@@ -109,7 +109,7 @@ function Remove-Service([System.ServiceProcess.ServiceController] $service) {
     Invoke-ServiceControl "delete $($service.ServiceName)"
     Start-Sleep 2
     if (Get-Service $service.ServiceName -EA SilentlyContinue) {
-        Write-Output "Faild to remove $serviceName. Exiting."
+        Write-Information "Faild to remove $serviceName. Exiting."
         exit 1
     }
 }
@@ -187,6 +187,7 @@ function Deploy-Application() {
         catch {
             $feilmelding = $_.Exception.Message
             Write-Error "Creating temp directory $TMP_DIR failed: $feilmelding"
+            Write-Output @{ status="FAILED" }
             exit 1
         }
 
@@ -197,6 +198,7 @@ function Deploy-Application() {
         catch {
             $feilmelding = $_.Exception.Message
             Write-Error "Emptying temp directory $TMP_DIR failed: $feilmelding"
+            Write-Output @{ status="FAILED" }
             exit 1
         }
 
@@ -214,6 +216,7 @@ function Deploy-Application() {
         catch {
             $feilmelding = hentFeilmelding($_)
             Write-Error "Downloading $filename from $url failed: $feilmelding"
+            Write-Output @{ status="FAILED" }
             exit 1
         }
 
@@ -227,6 +230,7 @@ function Deploy-Application() {
         catch {
             $feilmelding = hentFeilmelding($_)
             Write-Error "Extracting $TMP_DIR\$filename to $extractedDir failed : $feilmelding"
+            Write-Output @{ status="FAILED" }
             exit 1
         }
 
@@ -263,6 +267,7 @@ function Deploy-Application() {
         catch {
             $feilmelding = hentFeilmelding($_)
             Write-Error "Deleting of rollback directory $rollbackKatalog failed: $feilmelding"
+            Write-Output @{ status="FAILED" }
             exit 1
         }
 
@@ -280,6 +285,7 @@ function Deploy-Application() {
         catch {
             $feilmelding = hentFeilmelding($_)
             Write-Error "Copying of old application from $appKatalog to $rollbackKatalog failed: $feilmelding"
+            Write-Output @{ status="FAILED" }
             exit 1
         }
 
@@ -295,6 +301,7 @@ function Deploy-Application() {
         catch {
             $feilmelding = hentFeilmelding($_)
             Write-Error "Copying new application files from $extractedDir to $appKatalog failed: $feilmelding"
+            Write-Output @{ status="FAILED" }
             exit 1
         }
 
@@ -345,6 +352,7 @@ function Deploy-Application() {
             catch {
                 $feilmelding = hentFeilmelding($_)
                 Write-Error "Moving old application files from $rollbackKatalog back into $appKatalog failed: $feilmelding"
+                Write-Output @{ status="FAILED" }
                 exit 1
             }
 
@@ -356,15 +364,18 @@ function Deploy-Application() {
             else {
                 Write-Error "ERROR: Rollback failed with unkown status"
             }
+            Write-Output @{ status="FAILED" }
             exit 1
         }
     }
 }
 
-Deploy-Application 4>&1
+Deploy-Application
 
 if ($global:newVersionDeployed) {
+    Write-Output @{ status="SUCCESS" }
     exit 0
 } else {
+    Write-Output @{ status="FAILED" }
     exit 1
 }
