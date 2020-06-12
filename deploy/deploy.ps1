@@ -370,8 +370,8 @@ function Deploy-Application() {
     }
 }
 
-$VerbosePreference = Continue
-$InformationPreference = Continue
+$VerbosePreference = 'Continue'
+$InformationPreference = 'Continue'
 
 Deploy-Application
 
