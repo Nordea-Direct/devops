@@ -150,7 +150,7 @@ function Install-Application([string]$ApplicationDirectory, [string]$HealthUri, 
 
 function Test-ApplicationStatusUp([string]$HealthUri) {
     try {
-        $healthRepsonse = Invoke-RestMethod $HealthUri
+        $healthRepsonse = Invoke-RestMethod $HealthUri -TimeoutSec 3
         return $healthRepsonse.status -eq "UP"
     }
     catch {
