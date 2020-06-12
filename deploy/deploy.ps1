@@ -370,6 +370,9 @@ function Deploy-Application() {
     }
 }
 
+$VerbosePreference = Continue
+$InformationPreference = Continue
+
 Deploy-Application
 
 if ($global:newVersionDeployed) {
