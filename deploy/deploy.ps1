@@ -151,7 +151,7 @@ function Install-Application([string]$ApplicationDirectory, [string]$HealthUri, 
 function Test-ApplicationStatusUp([string]$HealthUri) {
     try {
         Write-SubStep "Sending request to $HealthUri"
-        $healthRepsonse = $wc.DownloadString($url) | ConvertFrom-Json
+        $healthRepsonse = $wc.DownloadString($HealthUri) | ConvertFrom-Json
         Write-SubStep "Reading response"
         return $healthRepsonse.status -eq "UP"
     }
