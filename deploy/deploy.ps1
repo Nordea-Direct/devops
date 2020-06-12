@@ -101,7 +101,7 @@ function Write-Step([string] $description) {
 }
 
 function Write-SubStep([string] $description) {
-    Write-Verbose "      $description" -Verbose
+    Write-Information "      $description" -Verbose
 }
 
 function Remove-Service([System.ServiceProcess.ServiceController] $service) {
