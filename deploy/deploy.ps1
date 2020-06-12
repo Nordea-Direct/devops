@@ -373,9 +373,15 @@ function Deploy-Application() {
 Deploy-Application
 
 if ($global:newVersionDeployed) {
+    Write-Step "SUCCESS"
     Write-Output @{ status="SUCCESS" }
     exit 0
 } else {
+	Write-Step "FAILED"
     Write-Output @{ status="FAILED" }
     exit 1
 }
+
+Write-Step "SUCCESS"
+Write-Output @{ status="SUCCESS" }
+exit 0
