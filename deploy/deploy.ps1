@@ -26,10 +26,10 @@ $TMP_DIR_BASE = "D:\devops"
 $BASE_PATH = "D:\gbapi"
 $ROLLBACK_BASE_PATH = "D:\gbapi_rollback"
 
-$STATUS_NEXT_ATTEMPT_WAIT = 20 # Seconds
+$STATUS_NEXT_ATTEMPT_WAIT = 30 # Seconds
 $STATUS_MAX_ATTEMPTS = 5
 
-$SERVICE_START_TIMEOUT = New-TimeSpan -Minutes 2
+$SERVICE_START_TIMEOUT = New-TimeSpan -Seconds 150
 $SERVICE_STOP_TIMEOUT = New-TimeSpan -Minutes 1
 
 $NSSM_APP_THROTTLE = 1 * 60 * 1000 # 1 min
