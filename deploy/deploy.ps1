@@ -26,8 +26,8 @@ $TMP_DIR_BASE = "D:\devops"
 $BASE_PATH = "D:\gbapi"
 $ROLLBACK_BASE_PATH = "D:\gbapi_rollback"
 
-$STATUS_NEXT_ATTEMPT_WAIT = 5 # Seconds
-$STATUS_MAX_ATTEMPTS = 20
+$STATUS_NEXT_ATTEMPT_WAIT = 1 # Seconds
+$STATUS_MAX_ATTEMPTS = 1
 
 $SERVICE_START_TIMEOUT = New-TimeSpan -Minutes 2
 $SERVICE_STOP_TIMEOUT = New-TimeSpan -Minutes 1
@@ -102,6 +102,7 @@ function Write-Step([string] $description) {
 
 function Write-SubStep([string] $description) {
     Write-Information "      $description" -Verbose
+    Write-Verbose "     v:$description"  -Verbose  # Verbose are only printed in Jenkins on completion
 }
 
 function Remove-Service([System.ServiceProcess.ServiceController] $service) {
@@ -148,10 +149,10 @@ function Install-Application([string]$ApplicationDirectory, [string]$HealthUri, 
     return Wait-ApplicationStatusUp $HealthUri
 }
 
-function Test-ApplicationStatusUp([string]$HealthUri) {
+function Verify-ApplicationStatusUp([string]$HealthUri) {
     try {
         Write-SubStep "Sending request (Invoke-RestMethod -DisableKeepAlive -TimeoutSec 3) to $HealthUri"
-        $healthRepsonse = Invoke-RestMethod -DisableKeepAlive -TimeoutSec 3 $HealthUri 
+        $healthRepsonse = Invoke-RestMethod -DisableKeepAlive -TimeoutSec 6 -MaximumRetryCount 20 -RetryIntervalSec 5  $HealthUri 
         Write-SubStep "Reading response"
         return $healthRepsonse.status -eq "UP"
     }
@@ -162,8 +163,8 @@ function Test-ApplicationStatusUp([string]$HealthUri) {
 
 function Wait-ApplicationStatusUp([string]$HealthUri) {
     for ($attempt = 1; $attempt -le $STATUS_MAX_ATTEMPTS; $attempt++) {
-        Write-SubStep "Testing application status (Attempt=$attempt, MaxAttempts=$STATUS_MAX_ATTEMPTS)"
-        if (Test-ApplicationStatusUp $HealthUri) {
+        Write-SubStep "Verify application status (Attempt=$attempt, MaxAttempts=$STATUS_MAX_ATTEMPTS)"
+        if (Verify-ApplicationStatusUp $HealthUri) {
             Write-SubStep "Recived application status UP"
             return $true
         }
