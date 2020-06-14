@@ -101,8 +101,7 @@ function Write-Step([string] $description) {
 }
 
 function Write-SubStep([string] $description) {
-    Write-Information "      $description" -Verbose
-    Write-Verbose "     v:$description"  -Verbose  # Verbose are only printed in Jenkins on completion
+    Write-Information "      $description" -Verbose    
 }
 
 function Remove-Service([System.ServiceProcess.ServiceController] $service) {
