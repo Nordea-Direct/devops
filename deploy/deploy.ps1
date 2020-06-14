@@ -26,8 +26,8 @@ $TMP_DIR_BASE = "D:\devops"
 $BASE_PATH = "D:\gbapi"
 $ROLLBACK_BASE_PATH = "D:\gbapi_rollback"
 
-$STATUS_NEXT_ATTEMPT_WAIT = 1 # Seconds
-$STATUS_MAX_ATTEMPTS = 1
+$STATUS_NEXT_ATTEMPT_WAIT = 5 # Seconds
+$STATUS_MAX_ATTEMPTS = 20
 
 $SERVICE_START_TIMEOUT = New-TimeSpan -Minutes 2
 $SERVICE_STOP_TIMEOUT = New-TimeSpan -Minutes 1
@@ -152,11 +152,16 @@ function Install-Application([string]$ApplicationDirectory, [string]$HealthUri, 
 function Verify-ApplicationStatusUp([string]$HealthUri) {
     try {
         Write-SubStep "Sending request (Invoke-RestMethod -DisableKeepAlive -TimeoutSec 3) to $HealthUri"
-        $healthRepsonse = Invoke-RestMethod -DisableKeepAlive -TimeoutSec 6 -MaximumRetryCount 20 -RetryIntervalSec 5  $HealthUri 
+        $healthRepsonse = Invoke-RestMethod -DisableKeepAlive -TimeoutSec 4 $HealthUri 
         Write-SubStep "Reading response"
         return $healthRepsonse.status -eq "UP"
     }
+    catch [System.Net.WebException],[System.IO.IOException] {
+    	Write-SubStep "OJ!! Restkallet feila!"
+        return $false
+    }
     catch {
+        Write-SubStep "OJ!! Noe (som ikke var et restkall) feila!"
         return $false
     }
 }
