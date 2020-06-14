@@ -150,8 +150,8 @@ function Install-Application([string]$ApplicationDirectory, [string]$HealthUri, 
 
 function Test-ApplicationStatusUp([string]$HealthUri) {
     try {
-        Write-SubStep "Sending request to $HealthUri"
-        $healthRepsonse = Invoke-WebRequest $HealthUri | ConvertFrom-Json
+        Write-SubStep "Sending request (Invoke-RestMethod -DisableKeepAlive -TimeoutSec 3) to $HealthUri"
+        $healthRepsonse = Invoke-RestMethod -DisableKeepAlive -TimeoutSec 3 $HealthUri 
         Write-SubStep "Reading response"
         return $healthRepsonse.status -eq "UP"
     }
