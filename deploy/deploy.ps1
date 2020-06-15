@@ -27,7 +27,7 @@ $BASE_PATH = "D:\gbapi"
 $ROLLBACK_BASE_PATH = "D:\gbapi_rollback"
 
 $STATUS_NEXT_ATTEMPT_WAIT = 30 # Seconds
-$STATUS_MAX_ATTEMPTS = 5
+$STATUS_MAX_ATTEMPTS = 10
 
 $SERVICE_START_TIMEOUT = New-TimeSpan -Seconds 150
 $SERVICE_STOP_TIMEOUT = New-TimeSpan -Minutes 1
