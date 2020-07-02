@@ -211,7 +211,7 @@ function Deploy-Application() {
         if ($version -match 'SNAPSHOT') {
             $url = $NEXUS_SNAPSHOT_BASE + "g=$group&a=$artifact&v=$version"
         }
-        Write-SubStep "Downloading $filename"
+        Write-SubStep "Downloading $filename ($url)"
         try {
             $wc.DownloadFile($url, "$TMP_DIR\$filename")
         }
