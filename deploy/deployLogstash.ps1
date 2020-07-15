@@ -2,7 +2,7 @@
 Param ()
 
 function skriv_steg($streng) {
-    Write-Output "** $streng"
+    Write-Information "** $streng"
 }
 
 function hentFeilmelding ($exception) {
@@ -34,7 +34,7 @@ function stopp_service($serviceName) {
     $service = 0
 
     # kjører servicen ?
-    Write-Output "sjekker om $serviceName kjoerer"
+    Write-Information "sjekker om $serviceName kjoerer"
 
     try {
         $service = Get-Service -Name $serviceName -EA SilentlyContinue
@@ -49,24 +49,25 @@ function stopp_service($serviceName) {
     }
 
     if ($kjorer) {
-        Write-Output "service $serviceName kjorer"
+        Write-Information "service $serviceName kjorer"
     } else {
-        Write-Output "service $serviceName kjorer IKKE"
+        Write-Information "service $serviceName kjorer IKKE"
     }
 
     # hvis service kjører - stopp service
     if ($kjorer) {
-        Write-Output "stopper servicen $serviceName"
+        Write-Information "stopper servicen $serviceName"
 
         Stop-Service -Name $serviceName -EA SilentlyContinue
 
         sleep 2
 
         if (sjekkOmKjoerer($serviceName)) {
-            Write-Output "feilet med stoppe servicen $serviceName, gir opp"
+            Write-Information "feilet med stoppe servicen $serviceName, gir opp"
+            Write-Output @{ status="FAILED" }
             exit 1
         } else {
-            Write-Output "service $serviceName stoppet"
+            Write-Information "service $serviceName stoppet"
         }
     }
 }
@@ -74,10 +75,11 @@ function stopp_service($serviceName) {
 function opprett_mappe($dir) {
     try {
         $output = New-Item -ItemType Directory -Force -Path $dir
-        Write-Output "opprettet mappe: $dir"
+        Write-Information "opprettet mappe: $dir"
     } catch {
         $feilmelding = hentFeilmelding($_)
-        Write-Output "feilet med aa opprette mappen $dir : $feilmelding"
+        Write-Information "feilet med aa opprette mappen $dir : $feilmelding"
+        Write-Output @{ status="FAILED" }
         exit 1
     }
 }
@@ -85,10 +87,11 @@ function opprett_mappe($dir) {
 function kopier_filer($src_dir, $dest_dir) {
     try {
         Copy-Item -Path "$src_dir\*" -Destination $dest_dir -Recurse -force
-        Write-Output "kopierte filer fra $src_dir til $dest_dir"
+        Write-Information "kopierte filer fra $src_dir til $dest_dir"
     } catch {
         $feilmelding = hentFeilmelding($_)
-        Write-Output "feilet med aa kopiere filer fra $src_dir til $dest_dir : $feilmelding"
+        Write-Information "feilet med aa kopiere filer fra $src_dir til $dest_dir : $feilmelding"
+        Write-Output @{ status="FAILED" }
         exit 1
     }
 }
@@ -96,10 +99,11 @@ function kopier_filer($src_dir, $dest_dir) {
 function slett_mappe($dir) {
     try {
         $output = Remove-Item -Recurse -Force $dir
-        Write-Output "slettet mappe: $dir"
+        Write-Information "slettet mappe: $dir"
     } catch {
         $feilmelding= hentFeilmelding($_)
-        Write-Output "feilet med aa slette mappen $dir : $feilmelding"
+        Write-Information "feilet med aa slette mappen $dir : $feilmelding"
+        Write-Output @{ status="FAILED" }
         exit 1
     }
 }
@@ -147,7 +151,7 @@ try {
     skriv_steg "starter service $SERVICE_NAME"
     
     Start-Service -Name $SERVICE_NAME
-    Write-Output "service $SERVICE_NAME startet"
+    Write-Information "service $SERVICE_NAME startet"
 
     sleep 2
 
@@ -156,11 +160,11 @@ try {
     if (sjekkOmKjoerer($SERVICE_NAME)) {
         $global:ServiceErIEnUgyldigState = $false
 
-        Write-Output "service $SERVICE_NAME kjorer"
+        Write-Information "service $SERVICE_NAME kjorer"
     } else {
         $global:ServiceErIEnUgyldigState = $true
 
-        Write-Output "service $SERVICE_NAME kjorer IKKE"
+        Write-Information "service $SERVICE_NAME kjorer IKKE"
     }
 } finally {
     if ($ServiceErIEnUgyldigState) {
@@ -171,26 +175,30 @@ try {
         skriv_steg "starter service $SERVICE_NAME"
         
         Start-Service -Name $SERVICE_NAME
-        Write-Output "service $SERVICE_NAME startet"
+        Write-Information "service $SERVICE_NAME startet"
 
         skriv_steg "sjekker at service $SERVICE_NAME kjorer"
 
         sleep 2
 
         if (sjekkOmKjoerer($SERVICE_NAME)) {
-            Write-Output "service $SERVICE_NAME kjorer"
+            Write-Information "service $SERVICE_NAME kjorer"
 
             slett_mappe $CONF_BACKUP_DIR
 
-            Write-Output "SEMI-FEIL: config rullet tilbake til forrige versjon"
+            Write-Information "SEMI-FEIL: config rullet tilbake til forrige versjon"
         } else {
-            Write-Output "service $SERVICE_NAME kjorer IKKE"
+            Write-Information "service $SERVICE_NAME kjorer IKKE"
 
-            Write-Output "FEIL: rollback til eldre versjon feilet. Service $SERVICE_NAME startet ikke"
+            Write-Information "FEIL: rollback til eldre versjon feilet. Service $SERVICE_NAME startet ikke"
         }
+
+        Write-Output @{ status="FAILED" }
+        exit 1
     } else {
         slett_mappe $CONF_BACKUP_DIR
 
-        Write-Output "SUKSESS: config for $SERVICE_NAME oppdatert"
+        Write-Information "SUKSESS: config for $SERVICE_NAME oppdatert"
+        Write-Output @{ status="SUCCESS" }
     }
 }
