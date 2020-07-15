@@ -8,7 +8,7 @@ Param (
 )
 
 function skriv_steg($streng) {
-    Write-Output "** $streng"
+    Write-Information "** $streng"
 }
 
 function hentFeilmelding ($exception) {
@@ -23,10 +23,11 @@ function hentFeilmelding ($exception) {
 function opprett_mappe($dir) {
     try {
         $output = New-Item -ItemType Directory -Force -Path $dir
-        Write-Output "opprettet mappe: $dir"
+        Write-Information "opprettet mappe: $dir"
     } catch {
         $feilmelding = hentFeilmelding($_)
-        Write-Output "feilet med aa opprette mappen $dir : $feilmelding"
+        Write-Information "feilet med aa opprette mappen $dir : $feilmelding"
+        Write-Output @{ status="FAILED" }
         exit 1
     }
 }
@@ -34,10 +35,11 @@ function opprett_mappe($dir) {
 function kopier_filer($src_dir, $dest_dir) {
     try {
         Copy-Item -Path "$src_dir\*" -Destination $dest_dir -Recurse -force
-        Write-Output "kopierte filer fra $src_dir til $dest_dir"
+        Write-Information "kopierte filer fra $src_dir til $dest_dir"
     } catch {
         $feilmelding = hentFeilmelding($_)
-        Write-Output "feilet med aa kopiere filer fra $src_dir til $dest_dir : $feilmelding"
+        Write-Information "feilet med aa kopiere filer fra $src_dir til $dest_dir : $feilmelding"
+        Write-Output @{ status="FAILED" }
         exit 1
     }
 }
@@ -45,10 +47,11 @@ function kopier_filer($src_dir, $dest_dir) {
 function slett_mappe($dir) {
     try {
         $output = Remove-Item -Recurse -Force $dir
-        Write-Output "slettet mappe: $dir"
+        Write-Information "slettet mappe: $dir"
     } catch {
         $feilmelding= hentFeilmelding($_)
-        Write-Output "feilet med aa slette mappen $dir : $feilmelding"
+        Write-Information "feilet med aa slette mappen $dir : $feilmelding"
+        Write-Output @{ status="FAILED" }
         exit 1
     }
 }
@@ -70,20 +73,20 @@ function slett_og_opprett_mappe($dir) {
 }
 
 function test_app_url($url) {
-    Write-Output "sjekker om app svarer paa helse-url: $url"
+    Write-Information "sjekker om app svarer paa helse-url: $url"
         
     try {
         $webRequest = [net.WebRequest]::Create($url)
         $response = $webRequest.GetResponse()
     } catch {
-        Write-Output "Fikk feil: $($error[0])"
+        Write-Information "Fikk feil: $($error[0])"
     }
     if (($response.StatusCode -as [int]) -eq 200) {
         $global:app_url_status = $true
-        Write-Output "app svarer med 200 OK paa helse-url: $url"
+        Write-Information "app svarer med 200 OK paa helse-url: $url"
     } else {
         $global:app_url_status = $false
-        Write-Output "app svarer IKKE med 200 OK paa helse-url: $url"
+        Write-Information "app svarer IKKE med 200 OK paa helse-url: $url"
     }
 }
 
@@ -118,10 +121,14 @@ try {
 
         slett_mappe $APP_BACKUP_DIR
 
-        Write-Output "SEMI-FEIL: appen $app rullet tilbake til forrige versjon"
+        Write-Information "SEMI-FEIL: appen $app rullet tilbake til forrige versjon"
+        Write-Output @{ status="FAILED" }
+        exit 1
     } else {
         slett_mappe $APP_BACKUP_DIR
 
-        Write-Output "SUKSESS: ny versjon av app $APP er ute"
+        Write-Information "SUKSESS: ny versjon av app $APP er ute"
+        Write-Output @{ status="SUCCESS" }
+        exit 0
     }
 }
