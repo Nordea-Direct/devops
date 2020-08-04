@@ -12,7 +12,10 @@ Param (
     [string]$healthUrl,
 
     [Parameter(Mandatory = $false)]
-    [string]$linkTilReleaseDok # TODO: remove, after no one passes this param.  
+    [string]$linkTilReleaseDok, # TODO: remove, after no one passes this param.  
+
+    [Parameter(Mandatory = $false)]
+    [string] $NEXUS_BASE_PARAM
 )
 
 $global:group, $global:artifact = $app.Split(':', 2)
@@ -211,6 +214,11 @@ function Deploy-Application() {
         if ($version -match 'SNAPSHOT') {
             $url = $NEXUS_SNAPSHOT_BASE + "g=$group&a=$artifact&v=$version"
         }
+        
+        if($PSBoundParameters.ContainsKey("NEXUS_BASE_PARAM")) {
+            $url = $NEXUS_BASE_PARAM + $group.replace('.', '/') + "/$artifact/$version/$filename"
+        }
+
         Write-SubStep "Downloading $filename ($url)"
         try {
             $wc.DownloadFile($url, "$TMP_DIR\$filename")
