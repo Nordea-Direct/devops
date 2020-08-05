@@ -5,7 +5,7 @@ Param (
     [string]$app,
 
     [Parameter(Mandatory = $true)]
-    [ValidatePattern('^\d+\.\d+(\.\d+)?(-SNAPSHOT)?$')]
+    [ValidatePattern('^\d+\.\d+(\.\d+)?(-SNAPSHOT)?(-[a-z0-9]+)?$')]
     [string]$version,
 
     [Parameter(Mandatory = $true)]
@@ -15,7 +15,7 @@ Param (
     [string]$linkTilReleaseDok, # TODO: remove, after no one passes this param.  
 
     [Parameter(Mandatory = $false)]
-    [string] $NEXUS_BASE_PARAM
+    [string] $NEXUS_BASE_PARAM = "null"
 )
 
 $global:group, $global:artifact = $app.Split(':', 2)
@@ -215,7 +215,7 @@ function Deploy-Application() {
             $url = $NEXUS_SNAPSHOT_BASE + "g=$group&a=$artifact&v=$version"
         }
         
-        if($PSBoundParameters.ContainsKey("NEXUS_BASE_PARAM")) {
+        if($NEXUS_BASE_PARAM -ne "null") {
             $url = $NEXUS_BASE_PARAM + $group.replace('.', '/') + "/$artifact/$version/$filename"
         }
 
