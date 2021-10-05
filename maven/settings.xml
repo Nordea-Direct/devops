@@ -1,0 +1,31 @@
+<settings>
+    <localRepository>C:\dev\maven-repo</localRepository>
+    <!-- localRepository>~/.m2/repository</localRepository -->
+    <!-- interactiveMode>true</interactiveMode -->
+    <!-- offline>true</offline -->
+
+    <activeProfiles>
+        <activeProfile>github</activeProfile>
+    </activeProfiles>
+
+    <profiles>
+        <profile>
+            <id>github</id>
+            <repositories>
+                <repository>
+                    <id>github</id>
+                    <name>github</name>
+                    <url>https://maven.pkg.github.com/Nordea-Direct/*</url>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
+
+    <servers>
+        <server>
+            <id>github</id>
+            <username>YOUR_NORDEA_USER</username>
+            <password>YOUR_NORDEA_USER_PAT</password>
+        </server>
+    </servers>
+</settings>
