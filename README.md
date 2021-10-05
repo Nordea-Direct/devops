@@ -6,7 +6,7 @@
 # Setting up your dev environment in a jiffy
 
 - [install](https://chocolatey.org/install) chocolatey
-- go to the **_chocolatey_** folder
+- go to the **_chocolatey_** folder in this repo
 - as **admin**, run `choco install packages.config`
   - you will get:
     - java
