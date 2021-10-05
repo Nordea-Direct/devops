@@ -1,11 +1,5 @@
-Dette prosjektet inneholder scripts brukt i devops sammenheng.
+#Master for github workflows
 
-# slett-gamle-logg-filer.ps1
-Dette scriptet sletter gamle logg filer og er installert på alle servere
+- Frontends copy the `.github` directory under `github\frontends\`
+- Backends copy the `.github` directory under `github\backends\`
 
-# slett-gamle-attachment-filer-creditflow.ps1
-Dette scriptet sletter gamle attachment filer for Creditflow. Installert som service på alle servere (UAT og PROD)
-
-
-# deploy/deploy.ps1
-Dette scriptet brukes for å deploy artefakter til alle serverne

@@ -1,0 +1,105 @@
+name: Build and deploy application to Github Packages Maven repo
+
+on:
+  release:
+    types:
+      - created
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.ACCESS_PACKAGES_GLOBAL_PAT }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+          registry-url: 'https://npm.pkg.github.com'
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build application
+        env:
+          NODE_ENV: production
+        run: npm run build:ci
+
+      - name: Change folder name to dist and zip it
+        run: cd dist && ls -ltra . && zip -r release.zip *
+
+      - name: Set up JDK 14 for publishing to GitHub Packages
+        uses: actions/setup-java@v2
+        with:
+          java-version: '14'
+          distribution: 'adopt'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Create settings.xml
+        uses: whelk-io/maven-settings-xml-action@v4
+        with:
+          servers: '
+            [
+              {
+                "id": "github",
+                "username": "${{ secrets.ACCESS_PACKAGES_USERNAME }}",
+                "password": "${{ secrets.ACCESS_PACKAGES_GLOBAL_PAT }}"
+              }
+            ]'
+          repositories: '
+            [
+              {
+                "id": "central",
+                "name": "Maven Central",
+                "url": "https://repo1.maven.org/maven2",
+                "releases": {
+                  "enabled": "true"
+                },
+                "snapshots": {
+                  "enabled": "false"
+                }
+              },
+                {
+                  "id": "github",
+                  "name": "Nordea Direct Github",
+                  "url": "https://maven.pkg.github.com/Nordea-Direct/*",
+                  "snapshots": {
+                    "enabled": "true"
+                  }
+                }
+            ]'
+
+
+      - name: Upload package
+        run: |
+          mvn deploy:deploy-file \
+            -DpomFile=pom.xml \
+            -Dpackaging=zip \
+            -Dfile=dist/release.zip \
+            -DrepositoryId=github \
+            -Durl=https://maven.pkg.github.com/${{ github.repository }}
+
+
+

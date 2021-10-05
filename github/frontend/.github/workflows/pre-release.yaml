@@ -1,0 +1,177 @@
+name: Pre-Release Step
+
+on:
+  pull_request:
+    types:
+    - closed
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.ACCESS_PACKAGES_GLOBAL_PAT }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+          registry-url: 'https://npm.pkg.github.com'
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+  build-project:
+    needs:
+      - run-tests
+    runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.ACCESS_PACKAGES_GLOBAL_PAT }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+          registry-url: 'https://npm.pkg.github.com'
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run build:ci
+        env:
+          NODE_ENV: production
+        run: npm run build:ci
+
+  npm-version:
+    needs:
+      - build-project
+    runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.ACCESS_PACKAGES_GLOBAL_PAT }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+          registry-url: 'https://npm.pkg.github.com'
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Configure Git user
+        run: |
+          git config user.email "nordeadirect-bot@github.com"
+          git config user.name "nordeadirect-bot"
+      - name: npm version
+        run: npm version patch
+
+  prepare-release:
+    needs:
+      - npm-version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 14 for publishing to GitHub Packages
+        uses: actions/setup-java@v2
+        with:
+          java-version: '14'
+          distribution: 'adopt'
+      - name: Creating SSH agent
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.NORDEABOT_PRIVATE_KEY }}
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+      - name: 'Create settings.xml'
+        uses: whelk-io/maven-settings-xml-action@v4
+        with:
+          servers: '
+            [
+              {
+                "id": "github",
+                "username": "${{ secrets.ACCESS_PACKAGES_USERNAME }}",
+                "password": "${{ secrets.ACCESS_PACKAGES_GLOBAL_PAT }}"
+              }
+            ]'
+          repositories: '
+            [
+              {
+                "id": "central",
+                "name": "Maven Central",
+                "url": "https://repo1.maven.org/maven2",
+                "releases": {
+                  "enabled": "true"
+                },
+                "snapshots": {
+                  "enabled": "false"
+                }
+              },
+                {
+                  "id": "github",
+                  "name": "Nordea Direct Github",
+                  "url": "https://maven.pkg.github.com/Nordea-Direct/*",
+                  "snapshots": {
+                    "enabled": "true"
+                  }
+                }
+            ]'
+      - name: Configure Git user
+        run: |
+          git config user.email "nordeadirect-bot@github.com"
+          git config user.name "nordeadirect-bot"
+      - name: Build with Maven and prepare a release version
+        run: mvn --batch-mode --update-snapshots release:prepare
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

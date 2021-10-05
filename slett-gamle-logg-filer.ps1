@@ -1,1 +1,0 @@
-Get-ChildItem -Path D:\gbapi -Recurse -Filter "*.log" | Where-Object {($_.LastWriteTime -lt (Get-Date).AddMonths(-6))} | Remove-Item
