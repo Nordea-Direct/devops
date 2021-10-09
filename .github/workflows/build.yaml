@@ -1,0 +1,65 @@
+name: Java Build Step
+
+on:
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 14 for Maven Building
+        uses: actions/setup-java@v2
+        with:
+          java-version: '14'
+          distribution: 'adopt'
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+      - name: Create settings.xml
+        uses: whelk-io/maven-settings-xml-action@v4
+        with:
+          servers: '
+            [
+              {
+                "id": "github",
+                "username": "${{ secrets.ACCESS_PACKAGES_USERNAME }}",
+                "password": "${{ secrets.ACCESS_PACKAGES_GLOBAL_PAT }}"
+              }
+            ]'
+          repositories: '
+            [
+              {
+                "id": "central",
+                "name": "Maven Central",
+                "url": "https://repo1.maven.org/maven2",
+                "releases": {
+                  "enabled": "true"
+                },
+                "snapshots": {
+                  "enabled": "false"
+                }
+              },
+                {
+                  "id": "github",
+                  "name": "Nordea Direct Github",
+                  "url": "https://maven.pkg.github.com/Nordea-Direct/*",
+                  "snapshots": {
+                    "enabled": "true"
+                  }
+                }
+            ]'
+      - name: Build with Maven
+        run: mvn --batch-mode --update-snapshots package
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
