@@ -1,7 +1,14 @@
 name: Java Build Step
 
 on:
-  workflow_call
+  workflow_call:
+    secrets:
+      ACCESS_PACKAGES_USERNAME:
+        required: true
+      ACCESS_PACKAGES_GLOBAL_PAT:
+        required: true
+      GITHUB_TOKEN:
+        required: true
 
 jobs:
   build:
