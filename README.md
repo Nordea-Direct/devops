@@ -21,10 +21,10 @@
 # Maven settings.xml
 
 - copy [settings.xml](maven/settings.xml) to your home area
-  - Replace username and password
+  - Replace username and password (with your PAT)
 
 
 # Node/npm .npmrc
 
 - copy [.npmrc](npm/.npmrc) to your home area
-    - Replace _authToken
+    - Replace _authToken (with your PAT)
