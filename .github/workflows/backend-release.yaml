@@ -1,8 +1,16 @@
 name: Java Release Step
 
 on:
-  release:
-    types: [ created ]
+  workflow_call:
+    secrets:
+      NORDEABOT_PRIVATE_KEY:
+        required: true
+      ACCESS_PACKAGES_USERNAME:
+        required: true
+      ACCESS_PACKAGES_GLOBAL_PAT:
+        required: true
+      GITHUB_TOKEN:
+        required: true
 
 jobs:
   build:
