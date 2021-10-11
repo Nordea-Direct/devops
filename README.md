@@ -1,7 +1,21 @@
-# Master for github workflows
+# Reusable github workflows 
 
-- Frontends copy the `.github` directory under `github\frontends\`
-- Backends copy the `.github` directory under `github\backends\`
+- Frontends use `.github\workflows\frontend-*.y(a)ml` files
+- Backends use `.github\workflows\backend-*.y(a)ml` files
+
+## Usage
+In the consuming repository add this to your workflow:
+
+```yaml
+jobs:
+  call-build-workflow:
+    uses: Nordea-Direct/devops/.github/workflows/backend-build.yaml@master
+    secrets:
+      ACCESS_PACKAGES_USERNAME: ${{ secrets.ACCESS_PACKAGES_USERNAME }}
+      ACCESS_PACKAGES_GLOBAL_PAT: ${{ secrets.ACCESS_PACKAGES_GLOBAL_PAT }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}
+``` 
+Remember to change the *uses* line to the correct workflow (`frontend/backend, build, pre-release, release`)
 
 # Setting up your dev environment in a jiffy
 
