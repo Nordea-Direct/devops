@@ -1,4 +1,4 @@
-name: Java Release Step
+name: Deploy to Github Packages on release creation (mvn deploy)
 
 on:
   workflow_call:
@@ -48,17 +48,6 @@ jobs:
             ]'
           repositories: '
             [
-              {
-                "id": "central",
-                "name": "Maven Central",
-                "url": "https://repo1.maven.org/maven2",
-                "releases": {
-                  "enabled": "true"
-                },
-                "snapshots": {
-                  "enabled": "false"
-                }
-              },
                 {
                   "id": "github",
                   "name": "Nordea Direct Github",
