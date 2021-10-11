@@ -1,4 +1,4 @@
-name: Build and deploy application to Github Packages Maven repo
+name: Build and deploy application to Github Packages Maven repo (mvn deploy)
 
 on:
   release:
@@ -71,24 +71,13 @@ jobs:
           repositories: '
             [
               {
-                "id": "central",
-                "name": "Maven Central",
-                "url": "https://repo1.maven.org/maven2",
-                "releases": {
-                  "enabled": "true"
-                },
+                "id": "github",
+                "name": "Nordea Direct Github",
+                "url": "https://maven.pkg.github.com/Nordea-Direct/*",
                 "snapshots": {
-                  "enabled": "false"
+                  "enabled": "true"
                 }
-              },
-                {
-                  "id": "github",
-                  "name": "Nordea Direct Github",
-                  "url": "https://maven.pkg.github.com/Nordea-Direct/*",
-                  "snapshots": {
-                    "enabled": "true"
-                  }
-                }
+              }
             ]'
 
 

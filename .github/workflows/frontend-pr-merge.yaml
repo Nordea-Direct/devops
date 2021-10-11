@@ -1,7 +1,9 @@
-name: Run tests then build project
+name: Prepare release on pull request merge (mvn release:prepare)
 
 on:
-  push
+  pull_request:
+    types:
+    - closed
 
 jobs:
   run-tests:
@@ -38,7 +40,7 @@ jobs:
         run: npm test
   build-project:
     needs:
-    - run-tests
+      - run-tests
     runs-on: ubuntu-latest
     env:
       NODE_AUTH_TOKEN: ${{ secrets.ACCESS_PACKAGES_GLOBAL_PAT }}
@@ -73,4 +75,57 @@ jobs:
           NODE_ENV: production
         run: npm run build:ci
 
-
+  prepare-release:
+    needs:
+      - build-project
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 14 for publishing to GitHub Packages
+        uses: actions/setup-java@v2
+        with:
+          java-version: '14'
+          distribution: 'adopt'
+      - name: Creating SSH agent
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.NORDEABOT_PRIVATE_KEY }}
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+      - name: 'Create settings.xml'
+        uses: whelk-io/maven-settings-xml-action@v4
+        with:
+          servers: '
+            [
+              {
+                "id": "github",
+                "username": "${{ secrets.ACCESS_PACKAGES_USERNAME }}",
+                "password": "${{ secrets.ACCESS_PACKAGES_GLOBAL_PAT }}"
+              }
+            ]'
+          repositories: '
+            [
+                {
+                  "id": "github",
+                  "name": "Nordea Direct Github",
+                  "url": "https://maven.pkg.github.com/Nordea-Direct/*",
+                  "snapshots": {
+                    "enabled": "true"
+                  }
+                }
+            ]'
+      - name: Configure Git user
+        run: |
+          git config user.email "nordeadirect-bot@github.com"
+          git config user.name "nordeadirect-bot"
+      - name: Build with Maven and prepare a release version
+        run: mvn --batch-mode --update-snapshots release:prepare
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
