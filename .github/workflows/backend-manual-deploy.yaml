@@ -1,4 +1,4 @@
-name: Deploy to Github Packages on release creation (mvn deploy)
+name: Deploy to Github Packages on manual workflow run (mvn deploy)
 
 on:
   workflow_call:
