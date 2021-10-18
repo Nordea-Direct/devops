@@ -69,6 +69,6 @@ jobs:
           git config user.email "nordeadirect-bot@github.com"
           git config user.name "nordeadirect-bot"
       - name: Build with Maven and prepare a release version
-        run: mvn --batch-mode --update-snapshots release:prepare -DskipITs=${{ inputs.skip-integration-tests }}
+        run: mvn --batch-mode --update-snapshots release:prepare -Dmaven.test.skip=${{ inputs.skip-integration-tests }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
