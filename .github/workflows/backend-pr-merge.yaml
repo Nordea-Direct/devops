@@ -5,7 +5,7 @@ on:
     inputs:
       skip-integration-tests:
         description: 'Skip integration tests true/false'
-        default: 'false'
+        default: false
         required: false
         type: boolean
     secrets:
