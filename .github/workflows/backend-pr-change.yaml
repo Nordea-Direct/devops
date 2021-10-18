@@ -58,6 +58,6 @@ jobs:
                 }
             ]'
       - name: Build with Maven
-        run: mvn --batch-mode --update-snapshots package -DskipITs=${{ inputs.skip-integration-tests }}
+        run: mvn --batch-mode --update-snapshots package -Dmaven.test.skip=${{ inputs.skip-integration-tests }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
