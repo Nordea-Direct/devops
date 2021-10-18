@@ -2,6 +2,12 @@ name: Build on pull request change (mvn package)
 
 on:
   workflow_call:
+    inputs:
+      skip-integration-tests:
+        description: 'Skip integration tests true/false'
+        default: 'false'
+        required: false
+        type: boolean
     secrets:
       ACCESS_PACKAGES_USERNAME:
         required: true
@@ -52,6 +58,6 @@ jobs:
                 }
             ]'
       - name: Build with Maven
-        run: mvn --batch-mode --update-snapshots package
+        run: mvn --batch-mode --update-snapshots package -DskipITs=${{ inputs.skip-integration-tests }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

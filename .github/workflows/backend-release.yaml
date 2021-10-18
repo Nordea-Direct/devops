@@ -2,6 +2,12 @@ name: Deploy to Github Packages on release creation (mvn deploy)
 
 on:
   workflow_call:
+    inputs:
+      skip-integration-tests:
+        description: 'Skip integration tests true/false'
+        default: 'false'
+        required: false
+        type: boolean
     secrets:
       NORDEABOT_PRIVATE_KEY:
         required: true
@@ -66,6 +72,6 @@ jobs:
         with:
           ref: ${{ github.event.release.tag_name }}
       - name: Build with Maven and deploy to Github Packages
-        run: mvn --update-snapshots --batch-mode deploy
+        run: mvn --update-snapshots --batch-mode deploy -DskipITs=${{ inputs.skip-integration-tests }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
