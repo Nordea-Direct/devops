@@ -8,6 +8,10 @@ on:
         default: false
         required: false
         type: boolean
+      maven-arguments:
+        description: 'Extra maven arguments if needed'
+        required: false
+        type: string
     secrets:
       NORDEABOT_PRIVATE_KEY:
         required: true
@@ -72,6 +76,6 @@ jobs:
         with:
           ref: ${{ github.event.release.tag_name }}
       - name: Build with Maven and deploy to Github Packages
-        run: mvn --update-snapshots --batch-mode deploy -Dmaven.test.skip=${{ inputs.skip-integration-tests }}
+        run: mvn --update-snapshots --batch-mode deploy -Dmaven.test.skip=${{ inputs.skip-integration-tests }} -Darguments=${{ inputs.maven-arguments }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
