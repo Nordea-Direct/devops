@@ -62,7 +62,7 @@ jobs:
             ]'
       - name: Configure Git user
         run: |
-          git config user.email "nordeadirect-bot@github.com"
+          git config user.email "espen.erlandsen@nordea.com"
           git config user.name "nordeadirect-bot"
       - name: Build with Maven and deploy to Github Packages
         run: mvn --update-snapshots --batch-mode deploy -Dmaven.test.skip=${{ inputs.skip-integration-tests }}

@@ -83,7 +83,7 @@ jobs:
             ]'
       - name: Configure Git user
         run: |
-          git config user.email "nordeadirect-bot@github.com"
+          git config user.email "espen.erlandsen@nordea.com"
           git config user.name "nordeadirect-bot"
       - uses: actions/checkout@v2
         name: Checking out Git repo with defined TAG
