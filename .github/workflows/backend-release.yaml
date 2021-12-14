@@ -78,4 +78,4 @@ jobs:
       - name: Build with Maven and deploy to Github Packages
         run: mvn --update-snapshots --batch-mode deploy -Dmaven.test.skip=${{ inputs.skip-integration-tests }} -Darguments=${{ inputs.maven-arguments }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.OUR_GITHUB_TOKEN }}

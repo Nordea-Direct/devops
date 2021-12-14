@@ -9,7 +9,7 @@ on:
         required: true
       ACCESS_PACKAGES_GLOBAL_PAT:
         required: true
-      GITHUB_TOKEN:
+      OUR_GITHUB_TOKEN:
         required: true
 
 jobs:
@@ -62,4 +62,4 @@ jobs:
       - name: Build with Maven and prepare a release version
         run: mvn --batch-mode --update-snapshots release:prepare
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.OUR_GITHUB_TOKEN }}
