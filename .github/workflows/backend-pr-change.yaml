@@ -29,12 +29,13 @@ jobs:
         with:
           java-version: '14'
           distribution: 'adopt'
+          cache: 'maven'
       - name: Cache Maven packages
         uses: actions/cache@v2
         with:
           path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
+          key: maven
+          restore-keys: maven
       - name: Create settings.xml
         uses: whelk-io/maven-settings-xml-action@v4
         with:
