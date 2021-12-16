@@ -34,8 +34,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.m2
-          key: ${{ runner.os }}-mmaven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-maven-
+          key: maven
+          restore-keys: maven
       - name: Create settings.xml
         uses: whelk-io/maven-settings-xml-action@v4
         with:
