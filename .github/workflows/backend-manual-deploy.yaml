@@ -33,8 +33,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.m2
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-maven-
+          key: maven
+          restore-keys: maven
       - name: Creating SSH agent
         uses: webfactory/ssh-agent@v0.5.3
         with:
